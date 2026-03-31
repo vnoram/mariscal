@@ -1,38 +1,69 @@
+/* EL PLATO DE CERÁMICA BLANCA */
+.plato {
+  position: relative;
+  width: 100%;
+  max-width: 550px;
+  height: 320px;
+  margin: 30px auto;
+  background: #ffffff;
+  border: 3px solid #e0e0e0;
+  border-radius: 50%; /* Óvalo para simular plato en perspectiva */
+  box-shadow: 
+    0 15px 25px rgba(0,0,0,0.08),
+    inset 0 -10px 20px rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* LA BEBIDA UBICADA EN EL PLATO */
+.bebidaVisual {
+  position: absolute;
+  right: 15%; /* Se ubica a la derecha de la empanada */
+  top: 15%;
+  font-size: 5rem;
+  z-index: 3;
+  filter: drop-shadow(0 10px 5px rgba(0,0,0,0.3));
+  animation: aparecer 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes aparecer {
+  0% { transform: scale(0) translateY(-30px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* LA EMPANADA DE MASA */
 .empanada {
   position: relative;
-  width: 420px;
-  height: 210px;
-  background: #fcdca0; /* Color masita horneada */
-  
-  /* Margen corregido: 30px abajo para que no choque con los botones de Limpiar/Servir */
-  margin: 30px auto 30px auto; 
+  width: 380px;
+  height: 190px;
+  background: #fcdca0;
   display: flex;
-  
-  /* ========================================================
-     EL TRUCO MAESTRO: Borde superior punteado y curvo
-     ======================================================== */
-  border-top: 22px dashed #d4a373; /* Esto crea las "ondas" del repulgue */
+  border-top: 20px dashed #d4a373;
   border-left: 8px solid #d4a373;
   border-right: 8px solid #d4a373;
   border-bottom: 6px solid #d4a373;
-  
-  /* Curvamos agresivamente arriba para que el borde punteado siga la forma */
-  border-radius: 220px 220px 15px 15px;
-  
-  /* Sombras para darle profundidad 3D de horneado */
+  border-radius: 200px 200px 15px 15px;
   box-shadow: 
-    0 10px 15px rgba(0,0,0,0.1),
+    0 10px 15px rgba(0,0,0,0.15),
     inset 0 -15px 25px rgba(212, 163, 115, 0.4);
+  z-index: 2; /* Para que esté por encima del fondo del plato */
+  margin-top: 20px;
 }
 
-/* --- ESTILOS INTERNOS --- */
 .lado {
   flex: 1;
-  padding: 25px 10px 10px 10px;
-  border-right: 3px dashed rgba(196, 147, 99, 0.4); /* Línea divisoria tenue */
+  padding: 15px 10px 10px 10px;
+  border-right: 3px dashed rgba(196, 147, 99, 0.4);
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.lado h3 {
+  margin: 0 0 5px 0;
+  font-size: 1.1rem;
+  color: #a0522d;
 }
 
 .lado:last-child {
@@ -40,7 +71,7 @@
 }
 
 .item {
-  font-size: 2.2rem; /* Emojis un poquito más grandes */
-  margin: 2px 0;
-  pointer-events: none; /* Asegura que no bloqueen el arrastre */
+  font-size: 2.5rem;
+  margin: -5px 0;
+  pointer-events: none;
 }

@@ -5,178 +5,92 @@ import Empanada from "./components/Empanada";
 import Controles from "./components/Controles";
 
 const inventario = ['🦐 Camarón', '🦪 Chorito', '🦀 Jaiba', '🍋 Limón', '🌿 Cilantro'];
+const inventarioBebidas = ['🥤 Coca-Cola', '🥤 Pepsi', '🍷 Vino'];
 
 export default function App() {
-
-  // Estado de la empanada (dos lados)
-  const [empanada, setEmpanada] = useState({
-    izquierda: [],
-    derecha: []
-  });
-
+  const [empanada, setEmpanada] = useState({ izquierda: [], derecha: [] });
+  const [bebidaPlato, setBebidaPlato] = useState(null); // Nuevo estado para el plato
   const [pedidoActual, setPedidoActual] = useState(null);
   const [mensaje, setMensaje] = useState("¡Abre el local para recibir clientes!");
-  const [contador, setContador] = useState(10);
+  const [contador, setContador] = useState(15);
 
-  const [vidas, setVidas] = useState(3);
-  const [puntos, setPuntos] = useState(0);
-
-  // Generar pedido mitad y mitad
   const generarPedido = () => {
     const nuevoPedido = {
-      izquierda: [
-        inventario[Math.floor(Math.random() * inventario.length)]
-      ],
-      derecha: [
-        inventario[Math.floor(Math.random() * inventario.length)]
-      ]
+      izquierda: [inventario[Math.floor(Math.random() * inventario.length)]],
+      derecha: [inventario[Math.floor(Math.random() * inventario.length)]],
+      bebida: inventarioBebidas[Math.floor(Math.random() * inventarioBebidas.length)] // El cliente pide bebida
     };
-
     setPedidoActual(nuevoPedido);
     setEmpanada({ izquierda: [], derecha: [] });
+    setBebidaPlato(null); // Limpiamos el plato
     setMensaje("¡Cliente nuevo en la mesa!");
   };
 
-  // Contador regresivo
   useEffect(() => {
-  if (vidas <= 0) return; // detener todo si el juego terminó
+    const timer = setInterval(() => setContador((c) => c - 1), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
-  const timer = setInterval(() => {
-    setContador((c) => Math.max(c - 1, 0)); // <-- evita negativos
-  }, 1000);
-
-  return () => clearInterval(timer);
-}, [vidas]);
-
-  // Cuando llega a 0 → nuevo cliente
   useEffect(() => {
-  if (vidas <= 0) return;
-
-  if (contador === 0) {
-
-    // Si había pedido y no se entregó → perder vida
-    if (pedidoActual) {
-      setVidas(v => v - 1);
-      setMensaje("⏳❌ Se acabó el tiempo, perdiste una vida");
-
-      if (vidas - 1 <= 0) {
-        setMensaje("💀 Game Over");
-        setPedidoActual(null);
-        setEmpanada({ izquierda: [], derecha: [] });
-        return;
-      }
+    if (contador <= 0) {
+      generarPedido();
+      setContador(15);
     }
+  }, [contador]);
 
-    // Nuevo cliente
-    generarPedido();
-    setContador(10);
-  }
-}, [contador]);
-
-  // Agregar ingrediente arrastrado
   const agregarIngrediente = (item, lado) => {
-    setEmpanada(prev => ({
-      ...prev,
-      [lado]: [...prev[lado], item]
-    }));
+    setEmpanada(prev => ({ ...prev, [lado]: [...prev[lado], item] }));
   };
 
-  // Entregar pedido
+  // Función exclusiva para agregar al plato
+  const agregarBebida = (item) => {
+    setBebidaPlato(item);
+  };
+
   const entregarPedido = () => {
-  if (!pedidoActual) {
-    setMensaje("No hay clientes.");
-    return;
-  }
+    if (!pedidoActual) return setMensaje("No hay clientes.");
 
-  const esCorrecto =
-    JSON.stringify(empanada.izquierda.sort()) === JSON.stringify(pedidoActual.izquierda.sort()) &&
-    JSON.stringify(empanada.derecha.sort()) === JSON.stringify(pedidoActual.derecha.sort());
+    const esCorrecto =
+      JSON.stringify(empanada.izquierda.sort()) === JSON.stringify(pedidoActual.izquierda.sort()) &&
+      JSON.stringify(empanada.derecha.sort()) === JSON.stringify(pedidoActual.derecha.sort()) &&
+      bebidaPlato === pedidoActual.bebida; // Validamos que lleve la bebida correcta
 
-  if (esCorrecto) {
-    setMensaje("⭐⭐⭐⭐⭐ ¡Perfect!");
-    setPuntos(prev => prev + 1); // SUMA PUNTOS
-    setPedidoActual(null);
-    setEmpanada({ izquierda: [], derecha: [] });
-  } else {
-    setMensaje("❌ Pedido incorrecto...");
-    setVidas(prev => prev - 1); // RESTA VIDA
+    setMensaje(esCorrecto ? "⭐⭐⭐⭐⭐ ¡Perfecto! Al cliente le encantó." : "❌ Pedido incorrecto...");
 
-    if (vidas - 1 <= 0) {
-      setMensaje("💀 Game Over");
+    if (esCorrecto) {
       setPedidoActual(null);
       setEmpanada({ izquierda: [], derecha: [] });
-      return;
+      setBebidaPlato(null);
     }
-  }
-};
+  };
 
   return (
-    <div style={{
-      fontFamily: 'sans-serif',
-      padding: '10px',
-      backgroundColor: '#fdf2e9',
-      minHeight: '100vh',
-      boxSizing: 'border-box'
-    }}>
+    <div style={{ fontFamily: 'sans-serif', padding: '10px', backgroundColor: '#fdf2e9', minHeight: '100vh', boxSizing: 'border-box' }}>
       <header style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <h1 style={{ color: '#d35400', fontSize: 'clamp(1.5rem, 5vw, 2.5rem)' }}>
-          🌊 Mariscal🦑
-        </h1>
+        <h1 style={{ color: '#d35400', fontSize: 'clamp(1.5rem, 5vw, 2.5rem)' }}>🥟 Empanadas Mitad y Mitad</h1>
         <p style={{ fontWeight: 'bold', color: '#2980b9' }}>{mensaje}</p>
-        <p style={{ fontSize: "1.2rem", color: "#c0392b" }}>
-          ⏳ Nuevo cliente en: {contador}s
-        </p>
-        <p style={{ fontSize: "1.2rem", color: "#27ae60" }}>
-          ❤️ Vidas: {vidas} | ⭐ Puntos: {puntos}
-        </p>
-        {vidas <= 0 && (
-  <button
-    onClick={() => {
-      setVidas(3);
-      setPuntos(0);
-      setMensaje("¡Nuevo juego iniciado!");
-      setContador(10);
-      generarPedido();
-    }}
-    style={{
-      padding: "10px 20px",
-      backgroundColor: "#27ae60",
-      color: "white",
-      border: "none",
-      borderRadius: "10px",
-      cursor: "pointer",
-      marginTop: "10px"
-    }}
-  >
-    🔄 Reiniciar Juego
-  </button>
-)}
+        <p style={{ fontSize: "1.2rem", color: "#c0392b" }}>⏳ Nuevo cliente en: {contador}s</p>
       </header>
 
-      <main style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '15px',
-        justifyContent: 'center',
-        maxWidth: '1200px',
-        margin: '0 auto'
-      }}>
+      <main style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', justifyContent: 'center', maxWidth: '1200px', margin: '0 auto' }}>
         <Ticket pedidoActual={pedidoActual} />
 
-        <div style={{
-          flex: '2 1 400px',
-          border: '3px solid #ff9800',
-          padding: '15px',
-          borderRadius: '15px',
-          backgroundColor: '#fff3e0'
-        }}>
-          <h2>🥟 Empanada</h2>
+        <div style={{ flex: '2 1 400px', border: '3px solid #ff9800', padding: '15px', borderRadius: '15px', backgroundColor: '#fff3e0' }}>
+          <h2>🍲 Mesón de Preparación</h2>
+          
+          <Inventario inventario={inventario} inventarioBebidas={inventarioBebidas} />
 
-          <Inventario inventario={inventario} />
+          <Empanada 
+            empanada={empanada} 
+            agregarIngrediente={agregarIngrediente} 
+            bebidaPlato={bebidaPlato} 
+            agregarBebida={agregarBebida} 
+          />
 
-          <Empanada empanada={empanada} agregarIngrediente={agregarIngrediente} />
-
-          <Controles limpiar={() => setEmpanada({ izquierda: [], derecha: [] })} entregar={entregarPedido} />
+          <Controles 
+            limpiar={() => { setEmpanada({ izquierda: [], derecha: [] }); setBebidaPlato(null); }} 
+            entregar={entregarPedido} 
+          />
         </div>
       </main>
     </div>
