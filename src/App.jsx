@@ -1,136 +1,112 @@
 import { useState } from 'react';
 
 export default function App() {
-  // ==========================================
-  // 1. LOS ESTADOS (La memoria del juego)
-  // ==========================================
   const [paila, setPaila] = useState([]);
-  const [pedidoActual, setPedidoActual] = useState(null); // Guardará lo que pide el cliente
-  const [mensaje, setMensaje] = useState("¡Abre el local para recibir clientes!"); // Mensajes del sistema
+  const [pedidoActual, setPedidoActual] = useState(null);
+  const [mensaje, setMensaje] = useState("¡Abre el local para recibir clientes!");
 
   const inventario = ['🦐 Camarón', '🦪 Chorito', '🦀 Jaiba', '🍋 Limón', '🌿 Cilantro'];
 
-  // ==========================================
-  // 2. LÓGICA DE NEGOCIO
-  // ==========================================
-  
-  // Función para que llegue un cliente nuevo
+  // --- Lógica del juego (se mantiene igual) ---
   const generarPedido = () => {
-    // Elegimos 3 ingredientes al azar de nuestro inventario
     const nuevoPedido = [];
     for (let i = 0; i < 3; i++) {
-      const ingredienteAlAzar = inventario[Math.floor(Math.random() * inventario.length)];
-      nuevoPedido.push(ingredienteAlAzar);
+      nuevoPedido.push(inventario[Math.floor(Math.random() * inventario.length)]);
     }
-    
-    // Ordenamos alfabéticamente para que sea más fácil comparar después
-    nuevoPedido.sort();
-    
-    setPedidoActual(nuevoPedido);
-    setPaila([]); // Vaciamos la paila de la cocina para el nuevo pedido
-    setMensaje("¡Cliente nuevo! Prepara su pedido rápido.");
-  };
-
-  const agregarIngrediente = (item) => {
-    if (paila.length < 6) {
-      setPaila([...paila, item]);
-    }
-  };
-
-  const tirarALaBasura = () => {
+    setPedidoActual(nuevoPedido.sort());
     setPaila([]);
-    setMensaje("Paila a la basura. ¡Empieza de nuevo!");
+    setMensaje("¡Cliente nuevo en la mesa!");
   };
 
-  // ¡LA FUNCIÓN ESTRELLA! Compara la cocina con el ticket
+  const agregarIngrediente = (item) => paila.length < 6 && setPaila([...paila, item]);
+  
   const entregarPedido = () => {
-    if (!pedidoActual) {
-      setMensaje("¡No hay ningún cliente esperando!");
-      return;
-    }
-
-    // Ordenamos la paila actual para compararla exactamente con el pedido
-    const pailaOrdenada = [...paila].sort();
-    
-    // Convertimos ambos arrays a texto para ver si son idénticos
-    if (JSON.stringify(pailaOrdenada) === JSON.stringify(pedidoActual)) {
-      setMensaje("⭐⭐⭐⭐⭐ ¡Perfecto! Al cliente le encantó. ¡Triunfé, mamá!");
-      setPedidoActual(null); // El cliente se va feliz
-    } else {
-      setMensaje("❌ Te equivocaste en los ingredientes. ¡El cliente se fue enojado!");
-    }
+    if (!pedidoActual) return setMensaje("No hay clientes.");
+    const esCorrecto = JSON.stringify([...paila].sort()) === JSON.stringify(pedidoActual);
+    setMensaje(esCorrecto ? "⭐⭐⭐⭐⭐ ¡Perfect!" : "❌ Pedido incorrecto...");
+    if (esCorrecto) setPedidoActual(null);
   };
 
-  // ==========================================
-  // 3. LA INTERFAZ VISUAL
-  // ==========================================
   return (
-    <div style={{ fontFamily: 'sans-serif', padding: '20px', backgroundColor: '#fff', minHeight: '100vh' }}>
+    <div style={{ 
+      fontFamily: 'sans-serif', 
+      padding: '10px', 
+      backgroundColor: '#fdf2e9', 
+      minHeight: '100vh',
+      boxSizing: 'border-box' 
+    }}>
       
-      <header style={{ textAlign: 'center', marginBottom: '30px' }}>
-        <h1 style={{ color: '#d35400' }}>🌊 Mariscales texia :3 🦀</h1>
-        <h3 style={{ color: '#2980b9' }}>{mensaje}</h3>
+      <header style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <h1 style={{ color: '#d35400', fontSize: 'clamp(1.5rem, 5vw, 2.5rem)' }}>🌊 Mariscal🦀</h1>
+        <p style={{ fontWeight: 'bold', color: '#2980b9' }}>{mensaje}</p>
       </header>
 
-      <main style={{ display: 'flex', gap: '20px', justifyContent: 'center', maxWidth: '1000px', margin: '0 auto' }}>
+      {/* CONTENEDOR RESPONSIVO: flex-wrap es la clave aquí */}
+      <main style={{ 
+        display: 'flex', 
+        flexWrap: 'wrap', // Si no cabe, se va para abajo
+        gap: '15px', 
+        justifyContent: 'center', 
+        maxWidth: '1200px', 
+        margin: '0 auto' 
+      }}>
         
-        {/* LADO IZQUIERDO: Estación de Pedidos */}
-        <div style={{ border: '3px dashed #ccc', padding: '20px', width: '30%', borderRadius: '15px', backgroundColor: '#f9f9f9' }}>
-          <h2>📝 Ticket del Cliente</h2>
-          
+        {/* ESTACIÓN DE PEDIDOS: En celular ocupará el 100%, en PC el 30% */}
+        <div style={{ 
+          flex: '1 1 300px', // Crece, se achica y su base son 300px
+          border: '3px dashed #ccc', 
+          padding: '15px', 
+          borderRadius: '15px', 
+          backgroundColor: '#fff' 
+        }}>
+          <h2 style={{ fontSize: '1.2rem' }}>📝 Ticket</h2>
           {pedidoActual ? (
-            <div style={{ backgroundColor: 'white', padding: '15px', border: '1px solid #ddd', boxShadow: '2px 2px 5px rgba(0,0,0,0.1)' }}>
-              <h3>Mesa 1 pide:</h3>
-              <ul style={{ fontSize: '20px', lineHeight: '1.5' }}>
-                {pedidoActual.map((item, index) => (
-                  <li key={index}>{item}</li>
-                ))}
-              </ul>
+            <div style={{ borderLeft: '5px solid #27ae60', paddingLeft: '10px', margin: '10px 0' }}>
+              {pedidoActual.map((item, i) => <div key={i} style={{fontSize: '1.2rem'}}>{item}</div>)}
             </div>
-          ) : (
-            <p>Esperando clientes...</p>
-          )}
-
-          <button onClick={generarPedido} style={{ marginTop: '20px', width: '100%', padding: '10px', backgroundColor: '#27ae60', color: 'white', border: 'none', borderRadius: '5px', fontSize: '16px', cursor: 'pointer' }}>
-            🔔 Llamar a un Cliente
+          ) : <p>Esperando...</p>}
+          <button onClick={generarPedido} style={{ width: '100%', padding: '12px', backgroundColor: '#27ae60', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+            🔔 Nuevo Cliente
           </button>
         </div>
 
-        {/* LADO DERECHO: Zona de Armado */}
-        <div style={{ border: '3px solid #ff9800', padding: '20px', width: '70%', borderRadius: '15px', backgroundColor: '#fff3e0' }}>
-          <h2>🍲 Mesón de Preparación</h2>
+        {/* ESTACIÓN DE COCINA: En celular ocupará el 100%, en PC el 60% */}
+        <div style={{ 
+          flex: '2 1 400px', 
+          border: '3px solid #ff9800', 
+          padding: '15px', 
+          borderRadius: '15px', 
+          backgroundColor: '#fff3e0' 
+        }}>
+          <h2 style={{ fontSize: '1.2rem' }}>🍲 Mesón</h2>
           
-          {/* Botones de Ingredientes */}
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-            {inventario.map((item, index) => (
-              <button 
-                key={index} onClick={() => agregarIngrediente(item)}
-                style={{ padding: '10px 15px', fontSize: '18px', cursor: 'pointer', borderRadius: '8px', border: '1px solid #ccc', backgroundColor: 'white' }}
-              >
-                + {item}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '15px' }}>
+            {inventario.map((item, i) => (
+              <button key={i} onClick={() => agregarIngrediente(item)} style={{ flex: '1 1 auto', padding: '10px', fontSize: '1.1rem', cursor: 'pointer', borderRadius: '8px', border: '1px solid #ddd' }}>
+                {item}
               </button>
             ))}
           </div>
 
-          {/* La Paila */}
-          <div style={{ marginTop: '20px', padding: '40px', backgroundColor: '#8d6e63', borderRadius: '20px', border: '5px solid #5d4037', color: 'white', textAlign: 'center', minHeight: '100px' }}>
-            {paila.length === 0 ? (
-              <h3>Paila vacía</h3>
-            ) : (
-              <h2 style={{ fontSize: '30px', margin: 0 }}>{paila.join(' + ')}</h2>
-            )}
+          <div style={{ 
+            padding: '20px', 
+            backgroundColor: '#8d6e63', 
+            borderRadius: '15px', 
+            color: 'white', 
+            textAlign: 'center', 
+            minHeight: '60px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1.3rem'
+          }}>
+            {paila.length > 0 ? paila.join(' + ') : "Paila vacía"}
           </div>
 
-          {/* Botones de Acción Final */}
-          <div style={{ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'center' }}>
-            <button onClick={tirarALaBasura} style={{ padding: '10px 20px', backgroundColor: '#e74c3c', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '16px' }}>
-              🗑️ Botar Paila
-            </button>
-            <button onClick={entregarPedido} style={{ padding: '10px 20px', backgroundColor: '#f39c12', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold' }}>
-              🛎️ ¡Entregar Pedido!
-            </button>
+          <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
+            <button onClick={() => setPaila([])} style={{ flex: 1, padding: '12px', backgroundColor: '#e74c3c', color: 'white', border: 'none', borderRadius: '8px' }}>🗑️ Limpiar</button>
+            <button onClick={entregarPedido} style={{ flex: 2, padding: '12px', backgroundColor: '#f39c12', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold' }}>🛎️ ¡Servir!</button>
           </div>
-
         </div>
 
       </main>
