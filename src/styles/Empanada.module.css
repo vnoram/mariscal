@@ -1,0 +1,25 @@
+.empanada {
+  display: flex;
+  width: 400px;
+  height: 200px;
+  border-radius: 100px;
+  overflow: hidden;
+  border: 4px solid #d4a373;
+  background: #f7e1b5;
+  margin-top: 15px;
+}
+
+.lado {
+  flex: 1;
+  padding: 10px;
+  border-right: 2px solid #d4a373;
+}
+
+.lado:last-child {
+  border-right: none;
+}
+
+.item {
+  font-size: 1.5rem;
+  margin: 5px 0;
+}

@@ -1,28 +1,40 @@
 import { useState, useEffect } from "react";
 import Ticket from "./components/Ticket";
 import Inventario from "./components/Inventario";
-import Paila from "./components/Paila";
+import Empanada from "./components/Empanada";
 import Controles from "./components/Controles";
 
 const inventario = ['🦐 Camarón', '🦪 Chorito', '🦀 Jaiba', '🍋 Limón', '🌿 Cilantro'];
 
 export default function App() {
-  const [paila, setPaila] = useState([]);
+
+  // Estado de la empanada (dos lados)
+  const [empanada, setEmpanada] = useState({
+    izquierda: [],
+    derecha: []
+  });
+
   const [pedidoActual, setPedidoActual] = useState(null);
   const [mensaje, setMensaje] = useState("¡Abre el local para recibir clientes!");
   const [contador, setContador] = useState(10);
 
+  // Generar pedido mitad y mitad
   const generarPedido = () => {
-    const nuevoPedido = Array.from({ length: 3 }, () =>
-      inventario[Math.floor(Math.random() * inventario.length)]
-    ).sort();
+    const nuevoPedido = {
+      izquierda: [
+        inventario[Math.floor(Math.random() * inventario.length)]
+      ],
+      derecha: [
+        inventario[Math.floor(Math.random() * inventario.length)]
+      ]
+    };
 
     setPedidoActual(nuevoPedido);
-    setPaila([]);
+    setEmpanada({ izquierda: [], derecha: [] });
     setMensaje("¡Cliente nuevo en la mesa!");
   };
 
-  // 🔥 Contador que baja cada segundo
+  // Contador regresivo
   useEffect(() => {
     const timer = setInterval(() => {
       setContador((c) => c - 1);
@@ -31,26 +43,36 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // 🔥 Cuando el contador llega a 0 → nuevo cliente
+  // Cuando llega a 0 → nuevo cliente
   useEffect(() => {
     if (contador <= 0) {
       generarPedido();
-      setContador(10); // reiniciar
+      setContador(10);
     }
   }, [contador]);
 
-  const agregarIngrediente = (item) =>
-    paila.length < 6 && setPaila([...paila, item]);
+  // Agregar ingrediente arrastrado
+  const agregarIngrediente = (item, lado) => {
+    setEmpanada(prev => ({
+      ...prev,
+      [lado]: [...prev[lado], item]
+    }));
+  };
 
+  // Entregar pedido
   const entregarPedido = () => {
     if (!pedidoActual) return setMensaje("No hay clientes.");
 
     const esCorrecto =
-      JSON.stringify([...paila].sort()) === JSON.stringify(pedidoActual);
+      JSON.stringify(empanada.izquierda.sort()) === JSON.stringify(pedidoActual.izquierda.sort()) &&
+      JSON.stringify(empanada.derecha.sort()) === JSON.stringify(pedidoActual.derecha.sort());
 
     setMensaje(esCorrecto ? "⭐⭐⭐⭐⭐ ¡Perfect!" : "❌ Pedido incorrecto...");
 
-    if (esCorrecto) setPedidoActual(null);
+    if (esCorrecto) {
+      setPedidoActual(null);
+      setEmpanada({ izquierda: [], derecha: [] });
+    }
   };
 
   return (
@@ -63,7 +85,7 @@ export default function App() {
     }}>
       <header style={{ textAlign: 'center', marginBottom: '20px' }}>
         <h1 style={{ color: '#d35400', fontSize: 'clamp(1.5rem, 5vw, 2.5rem)' }}>
-          🌊 Mariscal🦀
+          🥟 Empanadas Mitad y Mitad
         </h1>
         <p style={{ fontWeight: 'bold', color: '#2980b9' }}>{mensaje}</p>
         <p style={{ fontSize: "1.2rem", color: "#c0392b" }}>
@@ -88,13 +110,13 @@ export default function App() {
           borderRadius: '15px',
           backgroundColor: '#fff3e0'
         }}>
-          <h2>🍲 Mesón</h2>
+          <h2>🥟 Empanada</h2>
 
-          <Inventario inventario={inventario} agregarIngrediente={agregarIngrediente} />
+          <Inventario inventario={inventario} />
 
-          <Paila paila={paila} />
+          <Empanada empanada={empanada} agregarIngrediente={agregarIngrediente} />
 
-          <Controles limpiar={() => setPaila([])} entregar={entregarPedido} />
+          <Controles limpiar={() => setEmpanada({ izquierda: [], derecha: [] })} entregar={entregarPedido} />
         </div>
       </main>
     </div>

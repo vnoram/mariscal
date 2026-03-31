@@ -1,0 +1,24 @@
+.inventario {
+  padding: 10px;
+}
+
+.lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ingrediente {
+  background: #ffe0b2;
+  padding: 10px 15px;
+  border-radius: 10px;
+  cursor: grab;
+  font-size: 1.5rem;
+  border: 2px solid #ff9800;
+  transition: transform 0.1s;
+}
+
+.ingrediente:active {
+  cursor: grabbing;
+  transform: scale(1.1);
+}

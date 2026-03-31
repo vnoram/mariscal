@@ -1,23 +1,22 @@
 import styles from "../styles/Inventario.module.css";
-export default function Inventario({ inventario, agregarIngrediente }) {
+
+export default function Inventario({ inventario }) {
   return (
     <div className={styles.inventario}>
-      {inventario.map((item, i) => (
-        <button
-          key={i}
-          onClick={() => agregarIngrediente(item)}
-          style={{
-            flex: '1 1 auto',
-            padding: '10px',
-            fontSize: '1.1rem',
-            cursor: 'pointer',
-            borderRadius: '8px',
-            border: '1px solid #ddd'
-          }}
-        >
-          {item}
-        </button>
-      ))}
+      <h3>Ingredientes</h3>
+
+      <div className={styles.lista}>
+        {inventario.map((item, index) => (
+          <div
+            key={index}
+            draggable
+            onDragStart={(e) => e.dataTransfer.setData("ingrediente", item)}
+            className={styles.ingrediente}
+          >
+            {item}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
