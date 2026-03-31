@@ -11,21 +11,20 @@ export default function Inventario({ inventario }) {
             key={index}
             draggable
             onDragStart={(e) => {
-  e.dataTransfer.setData("ingrediente", item);
+              e.dataTransfer.setData("ingrediente", item);
 
-  // Crear una imagen temporal para mostrar mientras arrastras
-  const img = document.createElement("div");
-  img.style.fontSize = "2rem";
-  img.style.position = "absolute";
-  img.style.top = "-9999px";
-  img.innerText = item;
-  document.body.appendChild(img);
+              // Crear un canvas invisible para usar como imagen de arrastre
+              const canvas = document.createElement("canvas");
+              canvas.width = 60;
+              canvas.height = 60;
+              const ctx = canvas.getContext("2d");
 
-  e.dataTransfer.setDragImage(img, 0, 0);
+              ctx.font = "40px serif";
+              ctx.fillText(item, 10, 45);
 
-  // Eliminar la imagen después
-  setTimeout(() => document.body.removeChild(img), 0);
-}}
+              // Usar el canvas como imagen de arrastre
+              e.dataTransfer.setDragImage(canvas, 30, 30);
+            }}
             className={styles.ingrediente}
           >
             {item}
