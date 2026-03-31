@@ -7,10 +7,14 @@ export default function Empanada({ empanada, agregarIngrediente }) {
       {/* LADO IZQUIERDO */}
       <div
         className={styles.lado}
+        onDragEnter={(e) => e.preventDefault()} // NUEVO
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
+          e.preventDefault(); // NUEVO (Evita que el navegador bloquee la acción)
           const ingrediente = e.dataTransfer.getData("ingrediente");
-          agregarIngrediente(ingrediente, "izquierda");
+          if (ingrediente) {
+            agregarIngrediente(ingrediente, "izquierda");
+          }
         }}
       >
         <h3>Izquierda</h3>
@@ -22,10 +26,14 @@ export default function Empanada({ empanada, agregarIngrediente }) {
       {/* LADO DERECHO */}
       <div
         className={styles.lado}
+        onDragEnter={(e) => e.preventDefault()} // NUEVO
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
+          e.preventDefault(); // NUEVO
           const ingrediente = e.dataTransfer.getData("ingrediente");
-          agregarIngrediente(ingrediente, "derecha");
+          if (ingrediente) {
+            agregarIngrediente(ingrediente, "derecha");
+          }
         }}
       >
         <h3>Derecha</h3>
