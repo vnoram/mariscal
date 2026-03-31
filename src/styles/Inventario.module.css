@@ -16,6 +16,10 @@
   font-size: 1.5rem;
   border: 2px solid #ff9800;
   transition: transform 0.1s;
+  
+  /* ¡ESTA ES LA LÍNEA MÁGICA PARA MÓVILES! */
+  /* Le dice al celular: "No muevas la pantalla si me tocan" */
+  touch-action: none;
 }
 
 .ingrediente:active {
