@@ -18,6 +18,9 @@ export default function App() {
   const [mensaje, setMensaje] = useState("¡Abre el local para recibir clientes!");
   const [contador, setContador] = useState(10);
 
+  const [vidas, setVidas] = useState(3);
+  const [puntos, setPuntos] = useState(0);
+
   // Generar pedido mitad y mitad
   const generarPedido = () => {
     const nuevoPedido = {
@@ -36,20 +39,39 @@ export default function App() {
 
   // Contador regresivo
   useEffect(() => {
-    const timer = setInterval(() => {
-      setContador((c) => c - 1);
-    }, 1000);
+  if (vidas <= 0) return; // detener todo si el juego terminó
 
-    return () => clearInterval(timer);
-  }, []);
+  const timer = setInterval(() => {
+    setContador((c) => Math.max(c - 1, 0)); // <-- evita negativos
+  }, 1000);
+
+  return () => clearInterval(timer);
+}, [vidas]);
 
   // Cuando llega a 0 → nuevo cliente
   useEffect(() => {
-    if (contador <= 0) {
-      generarPedido();
-      setContador(10);
+  if (vidas <= 0) return;
+
+  if (contador === 0) {
+
+    // Si había pedido y no se entregó → perder vida
+    if (pedidoActual) {
+      setVidas(v => v - 1);
+      setMensaje("⏳❌ Se acabó el tiempo, perdiste una vida");
+
+      if (vidas - 1 <= 0) {
+        setMensaje("💀 Game Over");
+        setPedidoActual(null);
+        setEmpanada({ izquierda: [], derecha: [] });
+        return;
+      }
     }
-  }, [contador]);
+
+    // Nuevo cliente
+    generarPedido();
+    setContador(10);
+  }
+}, [contador]);
 
   // Agregar ingrediente arrastrado
   const agregarIngrediente = (item, lado) => {
@@ -61,19 +83,32 @@ export default function App() {
 
   // Entregar pedido
   const entregarPedido = () => {
-    if (!pedidoActual) return setMensaje("No hay clientes.");
+  if (!pedidoActual) {
+    setMensaje("No hay clientes.");
+    return;
+  }
 
-    const esCorrecto =
-      JSON.stringify(empanada.izquierda.sort()) === JSON.stringify(pedidoActual.izquierda.sort()) &&
-      JSON.stringify(empanada.derecha.sort()) === JSON.stringify(pedidoActual.derecha.sort());
+  const esCorrecto =
+    JSON.stringify(empanada.izquierda.sort()) === JSON.stringify(pedidoActual.izquierda.sort()) &&
+    JSON.stringify(empanada.derecha.sort()) === JSON.stringify(pedidoActual.derecha.sort());
 
-    setMensaje(esCorrecto ? "⭐⭐⭐⭐⭐ ¡Perfect!" : "❌ Pedido incorrecto...");
+  if (esCorrecto) {
+    setMensaje("⭐⭐⭐⭐⭐ ¡Perfect!");
+    setPuntos(prev => prev + 1); // SUMA PUNTOS
+    setPedidoActual(null);
+    setEmpanada({ izquierda: [], derecha: [] });
+  } else {
+    setMensaje("❌ Pedido incorrecto...");
+    setVidas(prev => prev - 1); // RESTA VIDA
 
-    if (esCorrecto) {
+    if (vidas - 1 <= 0) {
+      setMensaje("💀 Game Over");
       setPedidoActual(null);
       setEmpanada({ izquierda: [], derecha: [] });
+      return;
     }
-  };
+  }
+};
 
   return (
     <div style={{
@@ -91,6 +126,31 @@ export default function App() {
         <p style={{ fontSize: "1.2rem", color: "#c0392b" }}>
           ⏳ Nuevo cliente en: {contador}s
         </p>
+        <p style={{ fontSize: "1.2rem", color: "#27ae60" }}>
+          ❤️ Vidas: {vidas} | ⭐ Puntos: {puntos}
+        </p>
+        {vidas <= 0 && (
+  <button
+    onClick={() => {
+      setVidas(3);
+      setPuntos(0);
+      setMensaje("¡Nuevo juego iniciado!");
+      setContador(10);
+      generarPedido();
+    }}
+    style={{
+      padding: "10px 20px",
+      backgroundColor: "#27ae60",
+      color: "white",
+      border: "none",
+      borderRadius: "10px",
+      cursor: "pointer",
+      marginTop: "10px"
+    }}
+  >
+    🔄 Reiniciar Juego
+  </button>
+)}
       </header>
 
       <main style={{
