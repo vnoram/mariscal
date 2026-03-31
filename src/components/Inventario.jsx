@@ -10,7 +10,22 @@ export default function Inventario({ inventario }) {
           <div
             key={index}
             draggable
-            onDragStart={(e) => e.dataTransfer.setData("ingrediente", item)}
+            onDragStart={(e) => {
+  e.dataTransfer.setData("ingrediente", item);
+
+  // Crear una imagen temporal para mostrar mientras arrastras
+  const img = document.createElement("div");
+  img.style.fontSize = "2rem";
+  img.style.position = "absolute";
+  img.style.top = "-9999px";
+  img.innerText = item;
+  document.body.appendChild(img);
+
+  e.dataTransfer.setDragImage(img, 0, 0);
+
+  // Eliminar la imagen después
+  setTimeout(() => document.body.removeChild(img), 0);
+}}
             className={styles.ingrediente}
           >
             {item}
