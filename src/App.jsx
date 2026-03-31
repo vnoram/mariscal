@@ -120,7 +120,7 @@ export default function App() {
     }}>
       <header style={{ textAlign: 'center', marginBottom: '20px' }}>
         <h1 style={{ color: '#d35400', fontSize: 'clamp(1.5rem, 5vw, 2.5rem)' }}>
-          🥟 Empanadas Mitad y Mitad
+          🌊 Mariscal🦑
         </h1>
         <p style={{ fontWeight: 'bold', color: '#2980b9' }}>{mensaje}</p>
         <p style={{ fontSize: "1.2rem", color: "#c0392b" }}>
