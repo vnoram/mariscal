@@ -5,6 +5,7 @@ import Empanada from "./components/Empanada";
 import Controles from "./components/Controles";
 
 const inventario = ['🦐 Camarón', '🦪 Chorito', '🦀 Jaiba', '🍋 Limón', '🌿 Cilantro'];
+const inventarioEspecial = ['🧀 Queso', '🌶️ Ají', '🧅 Cebolla']; // NUEVO: Ingredientes Nivel 4 y 5
 const inventarioBebidas = ['🥤 Coca-Cola', '🥤 Pepsi', '🍷 Vino']; 
 
 export default function App() {
@@ -14,32 +15,56 @@ export default function App() {
   const [pedidoActual, setPedidoActual] = useState(null);
   const [mensaje, setMensaje] = useState("¡Abre el local para recibir clientes!");
   
-  const [contador, setContador] = useState(10);
+  const [contador, setContador] = useState(15); // Respetando tus 15 segundos iniciales
   const [vidas, setVidas] = useState(3);
   const [puntos, setPuntos] = useState(0);
   const [juegoTerminado, setJuegoTerminado] = useState(false);
 
-  const generarPedido = () => {
-    // Función interna: Genera entre 1 y 3 ingredientes al azar para un lado
+  // LOGICA DE DIFICULTAD PROGRESIVA
+  const generarPedido = (puntosActuales = puntos) => {
+    let minIng = 1, maxIng = 1;
+    let probBebida = 0.5; // 50% de probabilidad
+    let usaEspeciales = false;
+
+    // Evaluador de Niveles basado en tus puntos
+    if (puntosActuales <= 5) {
+      minIng = 1; maxIng = 1; probBebida = 0.5; // Nivel 1
+    } else if (puntosActuales <= 12) {
+      minIng = 1; maxIng = 2; probBebida = 0.5; // Nivel 2
+    } else if (puntosActuales <= 20) {
+      minIng = 2; maxIng = 2; probBebida = 1.0; // Nivel 3 (Bebida obligatoria)
+    } else if (puntosActuales <= 30) {
+      minIng = 2; maxIng = 3; probBebida = 1.0; usaEspeciales = true; // Nivel 4 (Especiales)
+    } else {
+      minIng = 3; maxIng = 3; probBebida = 1.0; usaEspeciales = true; // Nivel 5
+    }
+
+    const ingredientesDisponibles = usaEspeciales ? [...inventario, ...inventarioEspecial] : inventario;
+
     const generarLado = () => {
-      const cantidad = Math.floor(Math.random() * 3) + 1; // Número aleatorio del 1 al 3
+      const cantidad = Math.floor(Math.random() * (maxIng - minIng + 1)) + minIng;
       const lado = [];
       for (let i = 0; i < cantidad; i++) {
-        lado.push(inventario[Math.floor(Math.random() * inventario.length)]);
+        lado.push(ingredientesDisponibles[Math.floor(Math.random() * ingredientesDisponibles.length)]);
       }
       return lado;
     };
 
+    const pideBebida = Math.random() < probBebida;
+
     const nuevoPedido = {
-      izquierda: generarLado(), // Ahora pide una lista de 1 a 3 cosas
-      derecha: generarLado(),   // Ahora pide una lista de 1 a 3 cosas
-      bebida: inventarioBebidas[Math.floor(Math.random() * inventarioBebidas.length)]
+      izquierda: generarLado(),
+      derecha: generarLado(),
+      bebida: pideBebida ? inventarioBebidas[Math.floor(Math.random() * inventarioBebidas.length)] : null
     };
 
     setPedidoActual(nuevoPedido);
     setEmpanada({ izquierda: [], derecha: [] });
     setBebidaPlato(null); 
-    setMensaje("¡Cliente nuevo en la mesa!");
+    
+    // Mensaje que te avisa en qué nivel estás
+    const nivelActual = puntosActuales <= 5 ? 1 : puntosActuales <= 12 ? 2 : puntosActuales <= 20 ? 3 : puntosActuales <= 30 ? 4 : 5;
+    setMensaje(`¡Nivel ${nivelActual}! Cliente esperando.`);
   };
 
   useEffect(() => {
@@ -52,8 +77,8 @@ export default function App() {
     if (contador === 0 && !juegoTerminado) {
       setVidas((v) => v - 1);
       setMensaje("⏳ ¡Tiempo agotado! Perdiste una vida.");
-      generarPedido();
-      setContador(1);
+      generarPedido(puntos); // Mantiene la dificultad actual
+      setContador(15); // Vuelve a 15s como tenías programado
     }
   }, [contador, juegoTerminado]);
 
@@ -83,13 +108,14 @@ export default function App() {
       bebidaPlato === pedidoActual.bebida; 
 
     if (esCorrecto) {
-        setPuntos((p) => p + 1); // AHORA SOLO SUMA 1 PUNTO
+        const nuevosPuntos = puntos + 1;
+        setPuntos(nuevosPuntos); 
         setMensaje("⭐⭐⭐⭐⭐ ¡Perfecto! +1 Punto");
         setPedidoActual(null);
         setEmpanada({ izquierda: [], derecha: [] });
         setBebidaPlato(null); 
         setContador(15); 
-        setTimeout(generarPedido, 1500);
+        setTimeout(() => generarPedido(nuevosPuntos), 1500); // Avanza la dificultad
     } else {
         setVidas((v) => v - 1);
         setMensaje("❌ Pedido incorrecto... Perdiste una vida.");
@@ -102,7 +128,7 @@ export default function App() {
     setPuntos(0);
     setJuegoTerminado(false);
     setBebidaPlato(null); 
-    generarPedido();
+    generarPedido(0);
   };
 
   return (
@@ -130,7 +156,7 @@ export default function App() {
         <div style={{ flex: '2 1 400px', border: '3px solid #ff9800', padding: '15px', borderRadius: '15px', backgroundColor: '#fff3e0', opacity: juegoTerminado ? 0.6 : 1, pointerEvents: juegoTerminado ? 'none' : 'auto' }}>
           <h2>🍲 Mesón de Preparación</h2>
           
-          <Inventario inventario={inventario} inventarioBebidas={inventarioBebidas} />
+          <Inventario inventario={inventario} inventarioEspecial={inventarioEspecial} inventarioBebidas={inventarioBebidas} />
 
           <Empanada 
             empanada={empanada} 

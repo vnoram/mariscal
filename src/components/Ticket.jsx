@@ -8,13 +8,11 @@ export default function Ticket({ pedidoActual }) {
     );
   }
 
-  // Función matemática para contar cuántos ingredientes repetidos hay y agruparlos
   const agrupar = (ingredientes) => {
     const conteo = {};
     ingredientes.forEach(ing => {
       conteo[ing] = (conteo[ing] || 0) + 1;
     });
-    // Transforma { '🦐 Camarón': 2, '🍋 Limón': 1 } en "2x 🦐 Camarón, 1x 🍋 Limón"
     return Object.entries(conteo).map(([ing, cant]) => `x${cant} ${ing}`).join(', ');
   };
 
@@ -27,7 +25,8 @@ export default function Ticket({ pedidoActual }) {
       <p><b>Derecha:</b><br/> {agrupar(pedidoActual.derecha)}</p>
 
       <h3>🥤 Bebida:</h3>
-      <p>{pedidoActual.bebida}</p>
+      {/* Si es null (niveles bajos), muestra Ninguna */}
+      <p><b>{pedidoActual.bebida ? pedidoActual.bebida : "Ninguna"}</b></p>
     </div>
   );
 }
