@@ -20,9 +20,19 @@ export default function App() {
   const [juegoTerminado, setJuegoTerminado] = useState(false);
 
   const generarPedido = () => {
+    // Función interna: Genera entre 1 y 3 ingredientes al azar para un lado
+    const generarLado = () => {
+      const cantidad = Math.floor(Math.random() * 3) + 1; // Número aleatorio del 1 al 3
+      const lado = [];
+      for (let i = 0; i < cantidad; i++) {
+        lado.push(inventario[Math.floor(Math.random() * inventario.length)]);
+      }
+      return lado;
+    };
+
     const nuevoPedido = {
-      izquierda: [inventario[Math.floor(Math.random() * inventario.length)]],
-      derecha: [inventario[Math.floor(Math.random() * inventario.length)]],
+      izquierda: generarLado(), // Ahora pide una lista de 1 a 3 cosas
+      derecha: generarLado(),   // Ahora pide una lista de 1 a 3 cosas
       bebida: inventarioBebidas[Math.floor(Math.random() * inventarioBebidas.length)]
     };
 

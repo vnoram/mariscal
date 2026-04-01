@@ -55,12 +55,18 @@
   flex: 1;
   padding: 15px 10px 10px 10px;
   border-right: 3px dashed rgba(196, 147, 99, 0.4);
+  
+  /* NUEVO: En lugar de apilar hacia abajo en columna, los ponemos en fila y que bajen si no caben */
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-wrap: wrap; 
+  align-content: flex-start;
+  justify-content: center;
+  gap: 5px;
 }
 
 .lado h3 {
+  width: 100%; /* Obliga al título a ocupar toda la línea superior para no chocar con los emojis */
+  text-align: center;
   margin: 0 0 5px 0;
   font-size: 1.1rem;
   color: #a0522d;
