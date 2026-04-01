@@ -14,10 +14,9 @@ export default function App() {
   const [pedidoActual, setPedidoActual] = useState(null);
   const [mensaje, setMensaje] = useState("¡Abre el local para recibir clientes!");
   
-  // Tus estados originales recuperados al 100%
   const [contador, setContador] = useState(10);
   const [vidas, setVidas] = useState(3);
-  const [puntos, setPuntos] = useState(0); // RECUPERADO
+  const [puntos, setPuntos] = useState(0);
   const [juegoTerminado, setJuegoTerminado] = useState(false);
 
   const generarPedido = () => {
@@ -39,25 +38,21 @@ export default function App() {
     return () => clearInterval(timer);
   }, [juegoTerminado]);
 
-// Cuando llega a 0 -> pierde vida y nuevo cliente
   useEffect(() => {
-    // EL ARREGLO ESTÁ AQUÍ: Si el juego ya terminó, no dispares este evento
     if (contador === 0 && !juegoTerminado) {
       setVidas((v) => v - 1);
       setMensaje("⏳ ¡Tiempo agotado! Perdiste una vida.");
       generarPedido();
-      setContador(10);
+      setContador(1);
     }
   }, [contador, juegoTerminado]);
 
-  // Verifica si pierde
   useEffect(() => {
-    if (vidas <= 0 && !juegoTerminado) { // Evita que se dispare múltiples veces
+    if (vidas <= 0 && !juegoTerminado) {
       setJuegoTerminado(true);
       setMensaje(`💀 Game Over. Te despidieron de la Picá. Lograste: ${puntos} Pts.`); 
-      // Ya no forzamos el contador a 0 aquí para evitar el bucle
     }
-  }, [vidas, puntos, juegoTerminado]);
+  }, [vidas, puntos, juegoTerminado]); 
 
   const agregarIngrediente = (item, lado) => {
     if (juegoTerminado) return;
@@ -78,12 +73,12 @@ export default function App() {
       bebidaPlato === pedidoActual.bebida; 
 
     if (esCorrecto) {
-        setPuntos((p) => p + 10); // RECUPERADO: Sumar puntos
-        setMensaje("⭐⭐⭐⭐⭐ ¡Perfecto! +10 Puntos");
+        setPuntos((p) => p + 1); // AHORA SOLO SUMA 1 PUNTO
+        setMensaje("⭐⭐⭐⭐⭐ ¡Perfecto! +1 Punto");
         setPedidoActual(null);
         setEmpanada({ izquierda: [], derecha: [] });
         setBebidaPlato(null); 
-        setContador(10); 
+        setContador(15); 
         setTimeout(generarPedido, 1500);
     } else {
         setVidas((v) => v - 1);
@@ -93,8 +88,8 @@ export default function App() {
 
   const reiniciarJuego = () => {
     setVidas(3);
-    setContador(10);
-    setPuntos(0); // RECUPERADO: Reiniciar puntos
+    setContador(15);
+    setPuntos(0);
     setJuegoTerminado(false);
     setBebidaPlato(null); 
     generarPedido();
@@ -105,8 +100,7 @@ export default function App() {
       <header style={{ textAlign: 'center', marginBottom: '20px' }}>
         <h1 style={{ color: '#d35400', fontSize: 'clamp(1.5rem, 5vw, 2.5rem)' }}>🌊 Mariscales 🦑</h1>
         <p style={{ fontWeight: 'bold', color: '#2980b9', fontSize: '1.2rem' }}>{mensaje}</p>
-        
-        {/* RECUPERADO: Marcador completo de Puntos, Vidas y Tiempo */}
+
         <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', fontSize: "1.2rem", marginTop: '10px', flexWrap: 'wrap' }}>
           <span style={{ color: "#f39c12", fontWeight: 'bold' }}>⭐ Puntos: {puntos}</span>
           <span style={{ color: "#c0392b", fontWeight: 'bold' }}>⏳ Tiempo: {contador}s</span>
