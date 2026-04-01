@@ -4,19 +4,15 @@ import Inventario from "./components/Inventario";
 import Empanada from "./components/Empanada";
 import Controles from "./components/Controles";
 
-// FIREBASE
-import { db, auth, provider } from "./lib/firebase"; 
+// FIREBASE (Solo Base de Datos, sin Auth)
+import { db } from "./lib/firebase"; 
 import { collection, addDoc, getDocs, query, orderBy, limit } from "firebase/firestore";
-import { signInWithRedirect, signOut, onAuthStateChanged } from "firebase/auth";
+
 const inventario = ['🦐 Camarón', '🦪 Chorito', '🦀 Jaiba', '🍋 Limón', '🌿 Cilantro'];
 const inventarioEspecial = ['🧀 Queso', '🌶️ Ají', '🧅 Cebolla']; 
 const inventarioBebidas = ['🥤 Coca-Cola', '🥤 Pepsi', '🍷 Vino']; 
 
 export default function App() {
-
-  // ESTADOS DE AUTENTICACIÓN
-  const [usuario, setUsuario] = useState(null);
-  const [cargandoAuth, setCargandoAuth] = useState(true);
 
   const [empanada, setEmpanada] = useState({ izquierda: [], derecha: [] });
   const [bebidaPlato, setBebidaPlato] = useState(null); 
@@ -28,32 +24,10 @@ export default function App() {
   const [puntos, setPuntos] = useState(0);
   const [juegoTerminado, setJuegoTerminado] = useState(false);
 
+  // ESTADOS PARA EL RANKING
+  const [nombreJugador, setNombreJugador] = useState("");
   const [puntajeGuardado, setPuntajeGuardado] = useState(false);
   const [rankingTop, setRankingTop] = useState([]); 
-
-  // Observador de sesión (mantiene tu sesión abierta si recargas la página)
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUsuario(user);
-      setCargandoAuth(false);
-      if (user) generarPedido(0); // Inicia el juego automáticamente al entrar
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const iniciarSesion = async () => {
-    try {
-      // Usamos Redirect para que sea 100% compatible con celulares
-      await signInWithRedirect(auth, provider);
-    } catch (error) {
-      console.error("Error al iniciar sesión:", error);
-    }
-  };
-
-  const cerrarSesion = async () => {
-    await signOut(auth);
-    setUsuario(null);
-  };
 
   const generarPedido = (puntosActuales = puntos) => {
     let minIng = 1, maxIng = 1;
@@ -100,10 +74,10 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (juegoTerminado || !usuario) return; 
+    if (juegoTerminado) return; 
     const timer = setInterval(() => setContador((c) => c - 1), 1000);
     return () => clearInterval(timer);
-  }, [juegoTerminado, usuario]);
+  }, [juegoTerminado]);
 
   useEffect(() => {
     if (contador === 0 && !juegoTerminado) {
@@ -167,16 +141,16 @@ export default function App() {
   };
 
   const guardarPuntaje = async () => {
-    if (!usuario) return; 
+    if (!nombreJugador.trim()) return; 
     try {
       await addDoc(collection(db, "ranking"), {
-        nombre: usuario.displayName, // SACAMOS EL NOMBRE DIRECTO DE SU CUENTA DE GOOGLE
+        nombre: nombreJugador,
         puntos: puntos,
         fecha: new Date().toISOString()
       });
       setPuntajeGuardado(true);
       setMensaje("✅ ¡Puntaje guardado en la nube!");
-      cargarRanking(); 
+      cargarRanking(); // Recarga la tabla para que el jugador vea su récord
     } catch (error) {
       console.error("Error al guardar: ", error);
       setMensaje("❌ Hubo un error al conectar con Firebase.");
@@ -189,40 +163,14 @@ export default function App() {
     setPuntos(0);
     setJuegoTerminado(false);
     setBebidaPlato(null); 
+    setNombreJugador(""); 
     setPuntajeGuardado(false); 
     generarPedido(0);
   };
 
-  // PANTALLA DE CARGA (Mientras verifica si ya iniciaste sesión antes)
-  if (cargandoAuth) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'sans-serif', backgroundColor: '#fdf2e9' }}><h2>Cargando local...</h2></div>;
-  }
-
-  // PANTALLA DE LOGIN (Si no estás conectado)
-  if (!usuario) {
-    return (
-      <div style={{ fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#fdf2e9' }}>
-        <h1 style={{ color: '#d35400', fontSize: '3rem', marginBottom: '10px' }}>🌊 Mariscales 🦑</h1>
-        <p style={{ fontSize: '1.2rem', color: '#2980b9', marginBottom: '30px' }}>Inicia sesión para competir en el Ranking Global</p>
-        <button onClick={iniciarSesion} style={{ padding: '15px 30px', fontSize: '1.2rem', backgroundColor: '#fff', color: '#757575', border: '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
-          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" style={{ width: '24px' }} />
-          Ingresar con Google
-        </button>
-      </div>
-    );
-  }
-
-  // PANTALLA PRINCIPAL DEL JUEGO
   return (
     <div style={{ fontFamily: 'sans-serif', padding: '10px', backgroundColor: '#fdf2e9', minHeight: '100vh', boxSizing: 'border-box' }}>
       
-      {/* BARRA SUPERIOR DE USUARIO */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '10px', padding: '10px', maxWidth: '1200px', margin: '0 auto' }}>
-        <img src={usuario.photoURL} alt="Perfil" style={{ width: '40px', borderRadius: '50%' }} />
-        <span style={{ fontWeight: 'bold', color: '#333' }}>{usuario.displayName}</span>
-        <button onClick={cerrarSesion} style={{ padding: '8px 12px', backgroundColor: '#e74c3c', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Salir</button>
-      </div>
-
       <header style={{ textAlign: 'center', marginBottom: '20px' }}>
         <h1 style={{ color: '#d35400', fontSize: 'clamp(1.5rem, 5vw, 2.5rem)', margin: '0' }}>🌊 Mariscales 🦑</h1>
         <p style={{ fontWeight: 'bold', color: '#2980b9', fontSize: '1.2rem' }}>{mensaje}</p>
@@ -233,20 +181,31 @@ export default function App() {
           <span style={{ color: "#e74c3c", fontWeight: 'bold' }}>❤️ Vidas: {"❤️".repeat(vidas > 0 ? vidas : 0)}</span>
         </div>
 
+        {/* PANTALLA DE GAME OVER CON RANKING MANUAL */}
         {juegoTerminado && (
           <div style={{ marginTop: '20px', padding: '20px', backgroundColor: '#fff', borderRadius: '15px', border: '3px solid #e74c3c', display: 'inline-block', minWidth: '300px' }}>
             
             {!puntajeGuardado ? (
               <div style={{ marginBottom: '20px', borderBottom: '2px solid #eee', paddingBottom: '20px' }}>
-                <p style={{ marginBottom: '10px', fontWeight: 'bold', fontSize: '1.1rem' }}>Guardar récord como: <span style={{color: '#2980b9'}}>{usuario.displayName}</span></p>
-                <button onClick={guardarPuntaje} style={{ padding: '10px 20px', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.1rem' }}>
-                  💾 Subir a la Nube
-                </button>
+                <p style={{ marginBottom: '10px', fontWeight: 'bold', fontSize: '1.1rem' }}>Ingresa tu nombre para el Ranking:</p>
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                  <input 
+                    type="text" 
+                    placeholder="Tu nombre..." 
+                    value={nombreJugador}
+                    onChange={(e) => setNombreJugador(e.target.value)}
+                    style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '1rem', flex: 1 }}
+                  />
+                  <button onClick={guardarPuntaje} style={{ padding: '10px 15px', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
+                    💾 Guardar
+                  </button>
+                </div>
               </div>
             ) : (
               <p style={{ color: '#27ae60', fontWeight: 'bold', marginBottom: '15px', fontSize: '1.2rem' }}>¡Récord registrado con éxito!</p>
             )}
 
+            {/* TABLA DE TOP 5 JUGADORES */}
             {rankingTop.length > 0 && (
               <div style={{ textAlign: 'left', backgroundColor: '#f9f9f9', padding: '15px', borderRadius: '10px', marginBottom: '20px' }}>
                 <h3 style={{ margin: '0 0 15px 0', color: '#f39c12', textAlign: 'center' }}>🏆 Top 5 Mejores Jugadores</h3>
@@ -268,27 +227,30 @@ export default function App() {
         )}
       </header>
 
-      <main style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', justifyContent: 'center', maxWidth: '1200px', margin: '0 auto' }}>
-        <Ticket pedidoActual={pedidoActual} />
+      {/* Solo mostramos el juego si tienes vidas (Si no, mostramos solo la caja de Game Over) */}
+      {!juegoTerminado && (
+        <main style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', justifyContent: 'center', maxWidth: '1200px', margin: '0 auto' }}>
+          <Ticket pedidoActual={pedidoActual} />
 
-        <div style={{ flex: '2 1 400px', border: '3px solid #ff9800', padding: '15px', borderRadius: '15px', backgroundColor: '#fff3e0', opacity: juegoTerminado ? 0.6 : 1, pointerEvents: juegoTerminado ? 'none' : 'auto' }}>
-          <h2>🍲 Mesón de Preparación</h2>
-          
-          <Inventario inventario={inventario} inventarioEspecial={inventarioEspecial} inventarioBebidas={inventarioBebidas} />
+          <div style={{ flex: '2 1 400px', border: '3px solid #ff9800', padding: '15px', borderRadius: '15px', backgroundColor: '#fff3e0' }}>
+            <h2>🍲 Mesón de Preparación</h2>
+            
+            <Inventario inventario={inventario} inventarioEspecial={inventarioEspecial} inventarioBebidas={inventarioBebidas} />
 
-          <Empanada 
-            empanada={empanada} 
-            agregarIngrediente={agregarIngrediente} 
-            bebidaPlato={bebidaPlato} 
-            agregarBebida={agregarBebida} 
-          />
+            <Empanada 
+              empanada={empanada} 
+              agregarIngrediente={agregarIngrediente} 
+              bebidaPlato={bebidaPlato} 
+              agregarBebida={agregarBebida} 
+            />
 
-          <Controles 
-            limpiar={() => { setEmpanada({ izquierda: [], derecha: [] }); setBebidaPlato(null); }} 
-            entregar={entregarPedido} 
-          />
-        </div>
-      </main>
+            <Controles 
+              limpiar={() => { setEmpanada({ izquierda: [], derecha: [] }); setBebidaPlato(null); }} 
+              entregar={entregarPedido} 
+            />
+          </div>
+        </main>
+      )}
     </div>
   );
 }
