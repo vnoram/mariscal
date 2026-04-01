@@ -1,10 +1,8 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
-// LÍNEAS NUEVAS: Importamos la Autenticación y el proveedor de Google
-import { getAuth, GoogleAuthProvider } from "firebase/auth"; 
+import { getAuth } from "firebase/auth"; // LÍNEA NUEVA
 
-// Tu configuración (Mantenla tal cual la tenías)
 const firebaseConfig = {
   apiKey: "AIzaSyD3OLsRliN2k-FreJ2BDsCLoIPygc2GBMM",
   authDomain: "mariscal-d7ebc.firebaseapp.com",
@@ -18,9 +16,5 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 
-// Exportamos la Base de datos
 export const db = getFirestore(app);
-
-// LÍNEAS NUEVAS: Exportamos la herramienta de Auth para usarla en App.jsx
-export const auth = getAuth(app);
-export const provider = new GoogleAuthProvider();
+export const auth = getAuth(app); // LÍNEA NUEVA

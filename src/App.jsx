@@ -4,15 +4,33 @@ import Inventario from "./components/Inventario";
 import Empanada from "./components/Empanada";
 import Controles from "./components/Controles";
 
-// FIREBASE (Solo Base de Datos, sin Auth)
-import { db } from "./lib/firebase"; 
+// FIREBASE
+import { db, auth } from "./lib/firebase"; 
 import { collection, addDoc, getDocs, query, orderBy, limit } from "firebase/firestore";
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  updateProfile, 
+  signOut, 
+  onAuthStateChanged 
+} from "firebase/auth";
 
 const inventario = ['🦐 Camarón', '🦪 Chorito', '🦀 Jaiba', '🍋 Limón', '🌿 Cilantro'];
 const inventarioEspecial = ['🧀 Queso', '🌶️ Ají', '🧅 Cebolla']; 
 const inventarioBebidas = ['🥤 Coca-Cola', '🥤 Pepsi', '🍷 Vino']; 
 
 export default function App() {
+
+  // ESTADOS DE AUTENTICACIÓN
+  const [usuario, setUsuario] = useState(null);
+  const [cargandoAuth, setCargandoAuth] = useState(true);
+  const [modoRegistro, setModoRegistro] = useState(false);
+  
+  // ESTADOS DEL FORMULARIO
+  const [authNombre, setAuthNombre] = useState("");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authError, setAuthError] = useState("");
 
   const [empanada, setEmpanada] = useState({ izquierda: [], derecha: [] });
   const [bebidaPlato, setBebidaPlato] = useState(null); 
@@ -24,10 +42,56 @@ export default function App() {
   const [puntos, setPuntos] = useState(0);
   const [juegoTerminado, setJuegoTerminado] = useState(false);
 
-  // ESTADOS PARA EL RANKING
-  const [nombreJugador, setNombreJugador] = useState("");
   const [puntajeGuardado, setPuntajeGuardado] = useState(false);
   const [rankingTop, setRankingTop] = useState([]); 
+
+  // Observador de sesión
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUsuario(user);
+      setCargandoAuth(false);
+      if (user && !juegoTerminado && puntos === 0 && vidas === 3 && !pedidoActual) {
+        generarPedido(0);
+      }
+    });
+    return () => unsubscribe();
+  }, [juegoTerminado, puntos, vidas, pedidoActual]);
+
+  const manejarLogin = async (e) => {
+    e.preventDefault();
+    setAuthError("");
+    try {
+      await signInWithEmailAndPassword(auth, authEmail, authPassword);
+    } catch (error) {
+      setAuthError("Correo o contraseña incorrectos.");
+    }
+  };
+
+  const manejarRegistro = async (e) => {
+    e.preventDefault();
+    setAuthError("");
+    if (!authNombre.trim()) return setAuthError("El nombre es obligatorio.");
+    if (authPassword.length < 6) return setAuthError("La contraseña debe tener al menos 6 letras/números.");
+    
+    try {
+      const credenciales = await createUserWithEmailAndPassword(auth, authEmail, authPassword);
+      await updateProfile(credenciales.user, { displayName: authNombre });
+      setUsuario({ ...credenciales.user, displayName: authNombre });
+    } catch (error) {
+      if (error.code === 'auth/email-already-in-use') {
+        setAuthError("Este correo ya está registrado.");
+      } else {
+        setAuthError("Error al crear la cuenta.");
+      }
+    }
+  };
+
+  const cerrarSesion = async () => {
+    await signOut(auth);
+    setUsuario(null);
+    setAuthEmail("");
+    setAuthPassword("");
+  };
 
   const generarPedido = (puntosActuales = puntos) => {
     let minIng = 1, maxIng = 1;
@@ -74,10 +138,10 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (juegoTerminado) return; 
+    if (juegoTerminado || !usuario) return; 
     const timer = setInterval(() => setContador((c) => c - 1), 1000);
     return () => clearInterval(timer);
-  }, [juegoTerminado]);
+  }, [juegoTerminado, usuario]);
 
   useEffect(() => {
     if (contador === 0 && !juegoTerminado) {
@@ -141,16 +205,16 @@ export default function App() {
   };
 
   const guardarPuntaje = async () => {
-    if (!nombreJugador.trim()) return; 
+    if (!usuario) return; 
     try {
       await addDoc(collection(db, "ranking"), {
-        nombre: nombreJugador,
+        nombre: usuario.displayName || "Cocinero Anónimo", 
         puntos: puntos,
         fecha: new Date().toISOString()
       });
       setPuntajeGuardado(true);
       setMensaje("✅ ¡Puntaje guardado en la nube!");
-      cargarRanking(); // Recarga la tabla para que el jugador vea su récord
+      cargarRanking(); 
     } catch (error) {
       console.error("Error al guardar: ", error);
       setMensaje("❌ Hubo un error al conectar con Firebase.");
@@ -163,14 +227,87 @@ export default function App() {
     setPuntos(0);
     setJuegoTerminado(false);
     setBebidaPlato(null); 
-    setNombreJugador(""); 
     setPuntajeGuardado(false); 
     generarPedido(0);
   };
 
+  // PANTALLA DE CARGA
+  if (cargandoAuth) {
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'sans-serif', backgroundColor: '#fdf2e9' }}><h2>Cargando local...</h2></div>;
+  }
+
+  // PANTALLA DE LOGIN / REGISTRO
+  if (!usuario) {
+    return (
+      <div style={{ fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#fdf2e9', padding: '20px' }}>
+        <h1 style={{ color: '#d35400', fontSize: '3rem', marginBottom: '10px', textAlign: 'center' }}>🌊 Mariscales 🦑</h1>
+        
+        <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '15px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', width: '100%', maxWidth: '400px' }}>
+          <h2 style={{ textAlign: 'center', color: '#2980b9', marginTop: '0' }}>
+            {modoRegistro ? "Crear Nueva Cuenta" : "Iniciar Sesión"}
+          </h2>
+          
+          {authError && <p style={{ color: '#e74c3c', backgroundColor: '#fadbd8', padding: '10px', borderRadius: '5px', textAlign: 'center', fontWeight: 'bold' }}>{authError}</p>}
+
+          <form onSubmit={modoRegistro ? manejarRegistro : manejarLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            
+            {modoRegistro && (
+              <input 
+                type="text" 
+                placeholder="Tu Nombre (Para el Ranking)" 
+                value={authNombre} 
+                onChange={(e) => setAuthNombre(e.target.value)}
+                style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '1rem' }}
+                required 
+              />
+            )}
+
+            <input 
+              type="email" 
+              placeholder="Correo electrónico" 
+              value={authEmail} 
+              onChange={(e) => setAuthEmail(e.target.value)}
+              style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '1rem' }}
+              required 
+            />
+            
+            <input 
+              type="password" 
+              placeholder="Contraseña (mínimo 6 caracteres)" 
+              value={authPassword} 
+              onChange={(e) => setAuthPassword(e.target.value)}
+              style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '1rem' }}
+              required 
+            />
+
+            <button type="submit" style={{ padding: '15px', fontSize: '1.2rem', backgroundColor: '#2ecc71', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', marginTop: '10px' }}>
+              {modoRegistro ? "Registrarse y Jugar" : "Entrar a la Cocina"}
+            </button>
+          </form>
+
+          <div style={{ textAlign: 'center', marginTop: '20px' }}>
+            <button 
+              onClick={() => { setModoRegistro(!modoRegistro); setAuthError(""); }}
+              style={{ background: 'none', border: 'none', color: '#3498db', textDecoration: 'underline', cursor: 'pointer', fontSize: '1rem' }}
+            >
+              {modoRegistro ? "¿Ya tienes cuenta? Inicia sesión aquí" : "¿No tienes cuenta? Regístrate aquí"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // PANTALLA PRINCIPAL DEL JUEGO
   return (
     <div style={{ fontFamily: 'sans-serif', padding: '10px', backgroundColor: '#fdf2e9', minHeight: '100vh', boxSizing: 'border-box' }}>
       
+      {/* BARRA SUPERIOR DE USUARIO */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '10px', padding: '10px', maxWidth: '1200px', margin: '0 auto' }}>
+        <span style={{ fontWeight: 'bold', color: '#333' }}>Cocinero: {usuario.displayName || usuario.email}</span>
+        <button onClick={cerrarSesion} style={{ padding: '8px 12px', backgroundColor: '#e74c3c', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Salir</button>
+      </div>
+
       <header style={{ textAlign: 'center', marginBottom: '20px' }}>
         <h1 style={{ color: '#d35400', fontSize: 'clamp(1.5rem, 5vw, 2.5rem)', margin: '0' }}>🌊 Mariscales 🦑</h1>
         <p style={{ fontWeight: 'bold', color: '#2980b9', fontSize: '1.2rem' }}>{mensaje}</p>
@@ -181,31 +318,20 @@ export default function App() {
           <span style={{ color: "#e74c3c", fontWeight: 'bold' }}>❤️ Vidas: {"❤️".repeat(vidas > 0 ? vidas : 0)}</span>
         </div>
 
-        {/* PANTALLA DE GAME OVER CON RANKING MANUAL */}
         {juegoTerminado && (
           <div style={{ marginTop: '20px', padding: '20px', backgroundColor: '#fff', borderRadius: '15px', border: '3px solid #e74c3c', display: 'inline-block', minWidth: '300px' }}>
             
             {!puntajeGuardado ? (
               <div style={{ marginBottom: '20px', borderBottom: '2px solid #eee', paddingBottom: '20px' }}>
-                <p style={{ marginBottom: '10px', fontWeight: 'bold', fontSize: '1.1rem' }}>Ingresa tu nombre para el Ranking:</p>
-                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                  <input 
-                    type="text" 
-                    placeholder="Tu nombre..." 
-                    value={nombreJugador}
-                    onChange={(e) => setNombreJugador(e.target.value)}
-                    style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc', fontSize: '1rem', flex: 1 }}
-                  />
-                  <button onClick={guardarPuntaje} style={{ padding: '10px 15px', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
-                    💾 Guardar
-                  </button>
-                </div>
+                <p style={{ marginBottom: '10px', fontWeight: 'bold', fontSize: '1.1rem' }}>Guardar récord como: <span style={{color: '#2980b9'}}>{usuario.displayName || usuario.email}</span></p>
+                <button onClick={guardarPuntaje} style={{ padding: '10px 20px', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.1rem' }}>
+                  💾 Subir a la Nube
+                </button>
               </div>
             ) : (
               <p style={{ color: '#27ae60', fontWeight: 'bold', marginBottom: '15px', fontSize: '1.2rem' }}>¡Récord registrado con éxito!</p>
             )}
 
-            {/* TABLA DE TOP 5 JUGADORES */}
             {rankingTop.length > 0 && (
               <div style={{ textAlign: 'left', backgroundColor: '#f9f9f9', padding: '15px', borderRadius: '10px', marginBottom: '20px' }}>
                 <h3 style={{ margin: '0 0 15px 0', color: '#f39c12', textAlign: 'center' }}>🏆 Top 5 Mejores Jugadores</h3>
@@ -227,12 +353,12 @@ export default function App() {
         )}
       </header>
 
-      {/* Solo mostramos el juego si tienes vidas (Si no, mostramos solo la caja de Game Over) */}
+      {/* Renderizado de juego */}
       {!juegoTerminado && (
         <main style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', justifyContent: 'center', maxWidth: '1200px', margin: '0 auto' }}>
           <Ticket pedidoActual={pedidoActual} />
 
-          <div style={{ flex: '2 1 400px', border: '3px solid #ff9800', padding: '15px', borderRadius: '15px', backgroundColor: '#fff3e0' }}>
+          <div style={{ flex: '2 1 400px', border: '3px solid #ff9800', padding: '15px', borderRadius: '15px', backgroundColor: '#fff3e0', opacity: juegoTerminado ? 0.6 : 1, pointerEvents: juegoTerminado ? 'none' : 'auto' }}>
             <h2>🍲 Mesón de Preparación</h2>
             
             <Inventario inventario={inventario} inventarioEspecial={inventarioEspecial} inventarioBebidas={inventarioBebidas} />
