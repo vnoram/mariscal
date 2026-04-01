@@ -7,8 +7,7 @@ import Controles from "./components/Controles";
 // FIREBASE
 import { db, auth, provider } from "./lib/firebase"; 
 import { collection, addDoc, getDocs, query, orderBy, limit } from "firebase/firestore";
-import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
-
+import { signInWithRedirect, signOut, onAuthStateChanged } from "firebase/auth";
 const inventario = ['🦐 Camarón', '🦪 Chorito', '🦀 Jaiba', '🍋 Limón', '🌿 Cilantro'];
 const inventarioEspecial = ['🧀 Queso', '🌶️ Ají', '🧅 Cebolla']; 
 const inventarioBebidas = ['🥤 Coca-Cola', '🥤 Pepsi', '🍷 Vino']; 
@@ -44,7 +43,8 @@ export default function App() {
 
   const iniciarSesion = async () => {
     try {
-      await signInWithPopup(auth, provider);
+      // Usamos Redirect para que sea 100% compatible con celulares
+      await signInWithRedirect(auth, provider);
     } catch (error) {
       console.error("Error al iniciar sesión:", error);
     }
