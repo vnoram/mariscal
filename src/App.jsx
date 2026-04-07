@@ -299,22 +299,25 @@ export default function App() {
 
       {/* ESTACIÓN DE TRABAJO (Diseño Papa's Pizzeria / Arcade) */}
       {/* ESTACIÓN DE TRABAJO (Diseño Papa's Pizzeria / Arcade) */}
+      {/* ESTACIÓN DE TRABAJO (Diseño Responsivo: Arcade en PC / Apilado en Celular) */}
       <main style={{ 
         flex: 1, 
         display: 'flex', 
+        flexWrap: 'wrap', /* 👈 LA MAGIA: Si no hay espacio, tira el contenido hacia abajo */
+        justifyContent: 'center', /* Centra todo en el celular */
         backgroundColor: '#d39e66', 
         backgroundImage: 'linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px)',
         backgroundSize: '40px 40px', 
         borderTop: '8px solid #8b5a2b',
         boxShadow: 'inset 0 20px 30px rgba(0,0,0,0.1)',
-        position: 'relative',
-        overflow: 'hidden'
+        position: 'relative'
+        /* OJO: Quitamos "overflow: hidden" para que en el celular se pueda hacer scroll hacia abajo sin que corte el juego */
       }}>
         
         {juegoTerminado ? (
-          // ... (Todo el bloque de Game Over déjalo tal cual lo tenías)
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 100 }}>
-            <div style={{ backgroundColor: '#ecf0f1', padding: '30px', borderRadius: '15px', border: '5px solid #e74c3c', width: '90%', maxWidth: '500px', textAlign: 'center' }}>
+          // PANTALLA DE GAME OVER
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', paddingTop: '5%', zIndex: 100, minHeight: '100%' }}>
+            <div style={{ backgroundColor: '#ecf0f1', padding: '30px', borderRadius: '15px', border: '5px solid #e74c3c', width: '90%', maxWidth: '500px', textAlign: 'center', marginBottom: '50px' }}>
               <h2 style={{ color: '#c0392b', fontSize: '2.5rem', marginTop: 0 }}>¡Estás Despedido!</h2>
               <p style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Tu puntaje final: {puntos} Pts.</p>
               
@@ -348,42 +351,38 @@ export default function App() {
             </div>
           </div>
         ) : (
-          // JUEGO ACTIVO (Diseño 3 Columnas)
+          // JUEGO ACTIVO (Diseño adaptable)
           <>
-            {/* ZONA 1: Cuerda de Pedidos (Izquierda) */}
-            <div style={{ width: '25%', minWidth: '250px', backgroundColor: 'rgba(0,0,0,0.1)', borderRight: '4px solid #8b5a2b', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '5px 0 15px rgba(0,0,0,0.1)' }}>
-              <div style={{ width: '100%', height: '4px', backgroundColor: '#7f8c8d', position: 'absolute', top: '30px', left: 0, zIndex: 0 }}></div>
-              <div style={{ zIndex: 1, marginTop: '20px', width: '100%' }}>
-                <Ticket pedidoActual={pedidoActual} />
+            {/* ZONA 1: Cuerda de Pedidos */}
+            <div style={{ flex: '1 1 250px', backgroundColor: 'rgba(0,0,0,0.1)', borderRight: '2px dashed #8b5a2b', padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Ticket pedidoActual={pedidoActual} />
+            </div>
+
+            {/* ZONA 2: Mesón de Preparación */}
+            <div style={{ flex: '2 1 320px', padding: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px' }}>
+              {/* Le apliqué un pequeño zoom-out nativo (scale) para asegurar que el plato gigante quepa sin problemas en la pantalla de un celular */}
+              <div style={{ transform: 'scale(0.85)', transformOrigin: 'center center' }}>
+                <Empanada 
+                  empanada={empanada} 
+                  agregarIngrediente={agregarIngrediente} 
+                  bebidaPlato={bebidaPlato} 
+                  agregarBebida={agregarBebida} 
+                />
               </div>
             </div>
 
-            {/* ZONA 2: Mesón de Preparación (Centro) */}
-            <div style={{ flex: 1, padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-              <Empanada 
-                empanada={empanada} 
-                agregarIngrediente={agregarIngrediente} 
-                bebidaPlato={bebidaPlato} 
-                agregarBebida={agregarBebida} 
-              />
-            </div>
-
-            {/* ZONA 3: Bandejas de Ingredientes y Controles (Derecha) */}
-            <div style={{ width: '30%', minWidth: '300px', backgroundColor: '#a67b5b', borderLeft: '4px solid #8b5a2b', padding: '20px', boxShadow: 'inset 5px 0 15px rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              
-              {/* Bloque de Ingredientes de Colores */}
-              <div style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.8)', padding: '15px', borderRadius: '10px', border: '3px solid #8b5a2b', overflowY: 'auto' }}>
+            {/* ZONA 3: Bandejas e Ingredientes + Controles */}
+            <div style={{ flex: '1 1 300px', backgroundColor: '#a67b5b', borderLeft: '2px dashed #8b5a2b', padding: '15px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <div style={{ backgroundColor: 'rgba(255,255,255,0.8)', padding: '15px', borderRadius: '10px', border: '3px solid #8b5a2b' }}>
                 <Inventario inventario={inventario} inventarioEspecial={inventarioEspecial} inventarioBebidas={inventarioBebidas} />
               </div>
 
-              {/* Bloque de Botones (Movidos debajo del inventario) */}
               <div style={{ backgroundColor: '#2c3e50', padding: '15px', borderRadius: '10px', border: '4px solid #34495e', display: 'flex', justifyContent: 'center' }}>
                 <Controles 
                   limpiar={() => { setEmpanada({ izquierda: [], derecha: [] }); setBebidaPlato(null); }} 
                   entregar={entregarPedido} 
                 />
               </div>
-
             </div>
           </>
         )}
