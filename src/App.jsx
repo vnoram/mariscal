@@ -17,7 +17,8 @@ import {
 
 const inventario = ['🦐 Camarón', '🦪 Chorito', '🦀 Jaiba', '🍋 Limón', '🌿 Cilantro'];
 const inventarioEspecial = ['🧀 Queso', '🌶️ Ají', '🧅 Cebolla']; 
-const inventarioBebidas = ['🥤 Coca-Cola', '🥤 Pepsi', '🍷 Vino']; 
+// CAMBIO APLICADO: Reemplazo de Pepsi por Cerveza
+const inventarioBebidas = ['🥤 Coca-Cola', '🍺 Cerveza', '🍷 Vino']; 
 
 export default function App() {
 
