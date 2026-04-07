@@ -1,14 +1,13 @@
 /* EL PLATO DE CERÁMICA BLANCA */
 .plato {
   position: relative;
-  width: 100%;
-  max-width: 550px;
-  height: 320px;
-  margin: 30px auto;
+  width: min(92vw, 520px);
+  height: min(56vw, 310px);
+  margin: 4px auto;
   background: #ffffff;
   border: 3px solid #e0e0e0;
-  border-radius: 50%; /* Óvalo para simular plato en perspectiva */
-  box-shadow: 
+  border-radius: 50%;
+  box-shadow:
     0 15px 25px rgba(0,0,0,0.08),
     inset 0 -10px 20px rgba(0,0,0,0.05);
   display: flex;
@@ -19,56 +18,54 @@
 /* LA BEBIDA UBICADA EN EL PLATO */
 .bebidaVisual {
   position: absolute;
-  right: 15%; /* Se ubica a la derecha de la empanada */
-  top: 15%;
-  font-size: 5rem;
+  right: 15%;
+  top: 12%;
+  font-size: min(12vw, 4.5rem);
   z-index: 3;
-  filter: drop-shadow(0 10px 5px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 8px 4px rgba(0,0,0,0.3));
   animation: aparecer 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 @keyframes aparecer {
-  0% { transform: scale(0) translateY(-30px); opacity: 0; }
+  0% { transform: scale(0) translateY(-20px); opacity: 0; }
   100% { transform: scale(1) translateY(0); opacity: 1; }
 }
 
 /* LA EMPANADA DE MASA */
 .empanada {
   position: relative;
-  width: 380px;
-  height: 190px;
+  width: min(76vw, 380px);
+  height: min(38vw, 190px);
   background: #fcdca0;
   display: flex;
-  border-top: 20px dashed #d4a373;
-  border-left: 8px solid #d4a373;
-  border-right: 8px solid #d4a373;
-  border-bottom: 6px solid #d4a373;
-  border-radius: 200px 200px 15px 15px;
-  box-shadow: 
-    0 10px 15px rgba(0,0,0,0.15),
-    inset 0 -15px 25px rgba(212, 163, 115, 0.4);
-  z-index: 2; /* Para que esté por encima del fondo del plato */
-  margin-top: 20px;
+  border-top: min(3.5vw, 18px) dashed #d4a373;
+  border-left: min(1.6vw, 8px) solid #d4a373;
+  border-right: min(1.6vw, 8px) solid #d4a373;
+  border-bottom: min(1.2vw, 6px) solid #d4a373;
+  border-radius: min(53vw, 200px) min(53vw, 200px) 10px 10px;
+  box-shadow:
+    0 8px 14px rgba(0,0,0,0.15),
+    inset 0 -12px 20px rgba(212, 163, 115, 0.4);
+  z-index: 2;
+  margin-top: min(4vw, 18px);
 }
 
 .lado {
   flex: 1;
-  padding: 15px 10px 10px 10px;
-  border-right: 3px dashed rgba(196, 147, 99, 0.4);
-  
-  /* NUEVO: En lugar de apilar hacia abajo en columna, los ponemos en fila y que bajen si no caben */
+  padding: min(3vw, 14px) min(2vw, 10px) min(2vw, 10px);
+  border-right: 2px dashed rgba(196, 147, 99, 0.4);
   display: flex;
-  flex-wrap: wrap; 
+  flex-wrap: wrap;
   align-content: flex-start;
   justify-content: center;
-  gap: 5px;
+  gap: min(1vw, 4px);
 }
 
 .lado h3 {
-  width: 100%; /* Obliga al título a ocupar toda la línea superior para no chocar con los emojis */
+  width: 100%;
   text-align: center;
-  margin: 0 0 5px 0;
-  font-size: 1.1rem;
+  margin: 0 0 3px 0;
+  font-size: min(3.5vw, 1rem);
   color: #a0522d;
 }
 
@@ -77,7 +74,7 @@
 }
 
 .item {
-  font-size: 2.5rem;
-  margin: -5px 0;
+  font-size: min(6.5vw, 2.3rem);
+  margin: -3px 0;
   pointer-events: none;
 }

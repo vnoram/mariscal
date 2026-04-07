@@ -1,35 +1,33 @@
 .inventario {
-  padding: 5px;
+  padding: 2px;
 }
 
 .lista {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  justify-content: center; /* Centra los botones en el panel */
+  gap: 8px;
+  justify-content: center;
 }
 
 .ingrediente {
-  width: 65px; /* Botón cuadrado */
-  height: 65px;
+  width: 52px;
+  height: 52px;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 15px; /* Bordes redondeados estilo app */
+  border-radius: 12px;
   cursor: grab;
-  font-size: 2.2rem; /* Emoji más grande */
+  font-size: 1.9rem;
   border: 3px solid transparent;
   transition: transform 0.1s, box-shadow 0.1s;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.15); /* Sombra 3D */
-  
-  /* Evita que se mueva la pantalla en móviles al arrastrar */
+  box-shadow: 0 3px 5px rgba(0,0,0,0.15);
   touch-action: none;
 }
 
 .ingrediente:active {
   cursor: grabbing;
-  transform: scale(1.15); /* Efecto al presionar */
-  box-shadow: 0 8px 15px rgba(0,0,0,0.25);
+  transform: scale(1.18);
+  box-shadow: 0 7px 14px rgba(0,0,0,0.25);
 }
 
 /* --- CLASES DE COLORES --- */

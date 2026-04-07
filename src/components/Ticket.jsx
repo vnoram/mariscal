@@ -1,68 +1,43 @@
 export default function Ticket({ pedidoActual }) {
   if (!pedidoActual) {
     return (
-      <div style={{ border: "3px solid #ff9800", padding: "15px", borderRadius: "15px", backgroundColor: "#fffdf8", minWidth: "220px", textAlign: "center" }}>
-        <h2 style={{ margin: "0 0 10px 0", color: "#d35400" }}>🎟️ Ticket</h2>
-        <p style={{ margin: 0, color: "#888", fontWeight: "bold" }}>Esperando cliente...</p>
+      <div style={{ border: "2px solid #f39c12", padding: "8px 12px", borderRadius: "8px", backgroundColor: "#fffdf8", textAlign: "center", color: "#888", fontSize: "0.85rem" }}>
+        🎟️ Esperando cliente...
       </div>
     );
   }
 
-  // Ahora agrupar devuelve elementos visuales compactos en vez de texto plano
-  const agrupar = (ingredientes) => {
-    const conteo = {};
-    ingredientes.forEach(ing => {
-      conteo[ing] = (conteo[ing] || 0) + 1;
-    });
-    
-    return Object.entries(conteo).map(([ing, cant], index) => (
-      <div key={index} style={{ fontSize: '1rem', fontWeight: 'bold', color: '#444', lineHeight: '1.3' }}>
-        <span style={{ color: '#d35400' }}>{cant}x</span> {ing.split(' ')[0]} {/* Muestra "1x 🌿" */}
-      </div>
-    ));
-  };
-
   return (
-    <div style={{ 
-      border: "4px solid #f39c12", 
-      padding: "12px", 
-      borderRadius: "15px", 
-      backgroundColor: "#fffdf8", 
-      minWidth: "220px",
-      boxShadow: "0 6px 12px rgba(0,0,0,0.1)",
-      display: "flex",
-      flexDirection: "column",
-      gap: "10px"
-    }}>
-      
-      {/* CABECERA DEL TICKET */}
-      <h2 style={{ margin: "0", textAlign: "center", color: "#d35400", fontSize: "1.4rem", borderBottom: "2px dashed #f39c12", paddingBottom: "8px" }}>
-        🎟️ Pedido
-      </h2>
+    <div style={{ border: "2px solid #f39c12", borderRadius: "8px", backgroundColor: "#fffdf8", display: "flex", alignItems: "stretch", overflow: "hidden" }}>
 
-      {/* MITAD Y MITAD (COLUMNAS LADO A LADO) */}
-      <div style={{ display: "flex", justifyContent: "space-between", gap: "8px" }}>
-        
-        {/* Lado Izquierdo */}
-        <div style={{ flex: 1, backgroundColor: "#fbeee6", padding: "8px", borderRadius: "8px", textAlign: "center" }}>
-          <div style={{ fontSize: "0.85rem", color: "#e67e22", fontWeight: "bold", marginBottom: "5px", textTransform: "uppercase" }}>⬅️ Izq</div>
-          {agrupar(pedidoActual.izquierda)}
-        </div>
-
-        {/* Lado Derecho */}
-        <div style={{ flex: 1, backgroundColor: "#fbeee6", padding: "8px", borderRadius: "8px", textAlign: "center" }}>
-          <div style={{ fontSize: "0.85rem", color: "#e67e22", fontWeight: "bold", marginBottom: "5px", textTransform: "uppercase" }}>Der ➡️</div>
-          {agrupar(pedidoActual.derecha)}
-        </div>
-
+      {/* Icono ticket */}
+      <div style={{ backgroundColor: "#f39c12", padding: "0 7px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <span style={{ fontSize: "1rem" }}>🎟️</span>
       </div>
 
-      {/* BEBIDA (UNA SOLA FILA COMPACTA) */}
-      <div style={{ backgroundColor: "#e9f7ef", padding: "8px", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-        <span style={{ fontSize: "0.9rem", color: "#27ae60", fontWeight: "bold" }}>🥤 Bebida:</span>
-        <span style={{ fontSize: "1.1rem", fontWeight: "bold", color: "#333" }}>
-          {pedidoActual.bebida ? pedidoActual.bebida : "Ninguna"}
-        </span>
+      {/* Lado izquierdo */}
+      <div style={{ flex: 1, padding: "5px 6px", borderRight: "1px dashed #f39c12", textAlign: "center" }}>
+        <div style={{ fontSize: "0.6rem", color: "#e67e22", fontWeight: "bold", marginBottom: "2px", textTransform: "uppercase" }}>⬅️ Izq</div>
+        <div style={{ fontSize: "1.35rem", lineHeight: "1.1", letterSpacing: "-0.05em" }}>
+          {pedidoActual.izquierda.map((ing, i) => <span key={i}>{ing.split(' ')[0]}</span>)}
+        </div>
+      </div>
+
+      {/* Lado derecho */}
+      <div style={{ flex: 1, padding: "5px 6px", borderRight: pedidoActual.bebida ? "1px dashed #f39c12" : "none", textAlign: "center" }}>
+        <div style={{ fontSize: "0.6rem", color: "#e67e22", fontWeight: "bold", marginBottom: "2px", textTransform: "uppercase" }}>Der ➡️</div>
+        <div style={{ fontSize: "1.35rem", lineHeight: "1.1", letterSpacing: "-0.05em" }}>
+          {pedidoActual.derecha.map((ing, i) => <span key={i}>{ing.split(' ')[0]}</span>)}
+        </div>
+      </div>
+
+      {/* Bebida */}
+      <div style={{ flex: "0 0 auto", minWidth: "52px", padding: "5px 6px", backgroundColor: pedidoActual.bebida ? "#e9f7ef" : "#f5f5f5", textAlign: "center" }}>
+        <div style={{ fontSize: "0.6rem", color: pedidoActual.bebida ? "#27ae60" : "#aaa", fontWeight: "bold", marginBottom: "2px", textTransform: "uppercase" }}>🥤 Beb</div>
+        {pedidoActual.bebida
+          ? <div style={{ fontSize: "1.35rem", lineHeight: "1.1" }}>{pedidoActual.bebida.split(' ')[0]}</div>
+          : <div style={{ fontSize: "0.65rem", color: "#aaa", lineHeight: "1.5" }}>Ninguna</div>
+        }
       </div>
 
     </div>
