@@ -33,7 +33,7 @@ export default function App() {
   const [empanada, setEmpanada] = useState({ izquierda: [], derecha: [] });
   const [bebidaPlato, setBebidaPlato] = useState(null); 
   const [pedidoActual, setPedidoActual] = useState(null);
-  const [mensaje, setMensaje] = useState("¡Abre el local para recibir clientes!");
+  const [mensaje, setMensaje] = useState("¡Abre el local!");
   
   const [contador, setContador] = useState(15); 
   const [vidas, setVidas] = useState(3);
@@ -68,7 +68,7 @@ export default function App() {
     e.preventDefault();
     setAuthError("");
     if (!authNombre.trim()) return setAuthError("El nombre es obligatorio.");
-    if (authPassword.length < 6) return setAuthError("La contraseña debe tener al menos 6 letras/números.");
+    if (authPassword.length < 6) return setAuthError("La contraseña debe tener al menos 6 letras.");
     
     try {
       const credenciales = await createUserWithEmailAndPassword(auth, authEmail, authPassword);
@@ -131,7 +131,7 @@ export default function App() {
     setBebidaPlato(null); 
     
     const nivelActual = puntosActuales <= 5 ? 1 : puntosActuales <= 12 ? 2 : puntosActuales <= 20 ? 3 : puntosActuales <= 30 ? 4 : 5;
-    setMensaje(`¡Nivel ${nivelActual}! Cliente esperando.`);
+    setMensaje(`¡Nivel ${nivelActual}!`);
   };
 
   useEffect(() => {
@@ -143,7 +143,7 @@ export default function App() {
   useEffect(() => {
     if (contador === 0 && !juegoTerminado) {
       setVidas((v) => v - 1);
-      setMensaje("⏳ ¡Tiempo agotado! Perdiste una vida.");
+      setMensaje("⏳ ¡Tiempo agotado!");
       generarPedido(puntos); 
       setContador(15); 
     }
@@ -163,7 +163,7 @@ export default function App() {
   useEffect(() => {
     if (vidas <= 0 && !juegoTerminado) {
       setJuegoTerminado(true);
-      setMensaje(`💀 Game Over. Lograste: ${puntos} Pts.`); 
+      setMensaje(`💀 Game Over`); 
       cargarRanking(); 
     }
   }, [vidas, puntos, juegoTerminado]); 
@@ -189,7 +189,7 @@ export default function App() {
     if (esCorrecto) {
         const nuevosPuntos = puntos + 1;
         setPuntos(nuevosPuntos); 
-        setMensaje("⭐⭐⭐⭐⭐ ¡Perfecto! +1 Punto");
+        setMensaje("⭐⭐⭐⭐⭐ ¡Perfecto!");
         setPedidoActual(null);
         setEmpanada({ izquierda: [], derecha: [] });
         setBebidaPlato(null); 
@@ -197,7 +197,7 @@ export default function App() {
         setTimeout(() => generarPedido(nuevosPuntos), 1500); 
     } else {
         setVidas((v) => v - 1);
-        setMensaje("❌ Pedido incorrecto... Perdiste una vida.");
+        setMensaje("❌ Pedido incorrecto");
     }
   };
 
@@ -210,11 +210,11 @@ export default function App() {
         fecha: new Date().toISOString()
       });
       setPuntajeGuardado(true);
-      setMensaje("✅ ¡Puntaje guardado en la nube!");
+      setMensaje("✅ ¡Guardado!");
       cargarRanking(); 
     } catch (error) {
       console.error("Error al guardar: ", error);
-      setMensaje("❌ Hubo un error al conectar con Firebase.");
+      setMensaje("❌ Error");
     }
   };
 
@@ -229,139 +229,91 @@ export default function App() {
   };
 
   if (cargandoAuth) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'sans-serif', backgroundColor: '#2c3e50', color: 'white' }}><h2>Cargando estación...</h2></div>;
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#111', color: 'white' }}><h2>Cargando...</h2></div>;
   }
 
   if (!usuario) {
     return (
-      <div style={{ fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#2c3e50', padding: '20px' }}>
-        <h1 style={{ color: '#f39c12', fontSize: '3.5rem', marginBottom: '10px', textAlign: 'center', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>🌊 Mariscales 🦑</h1>
-        
-        <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '15px', boxShadow: '0 10px 25px rgba(0,0,0,0.3)', width: '100%', maxWidth: '400px' }}>
-          <h2 style={{ textAlign: 'center', color: '#2c3e50', marginTop: '0' }}>
-            {modoRegistro ? "Crear Nueva Cuenta" : "Iniciar Sesión"}
-          </h2>
-          
-          {authError && <p style={{ color: '#e74c3c', backgroundColor: '#fadbd8', padding: '10px', borderRadius: '5px', textAlign: 'center', fontWeight: 'bold' }}>{authError}</p>}
-
-          <form onSubmit={modoRegistro ? manejarRegistro : manejarLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            {modoRegistro && (
-              <input 
-                type="text" placeholder="Tu Nombre (Para el Ranking)" value={authNombre} onChange={(e) => setAuthNombre(e.target.value)}
-                style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '1rem' }} required 
-              />
-            )}
-            <input 
-              type="email" placeholder="Correo electrónico" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)}
-              style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '1rem' }} required 
-            />
-            <input 
-              type="password" placeholder="Contraseña (mínimo 6 caracteres)" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)}
-              style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '1rem' }} required 
-            />
-            <button type="submit" style={{ padding: '15px', fontSize: '1.2rem', backgroundColor: '#e67e22', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', marginTop: '10px', boxShadow: '0 4px 0 #d35400' }}>
+      <div style={{ fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: '#111', padding: '20px' }}>
+        <h1 style={{ color: '#f39c12', fontSize: '2.5rem', marginBottom: '10px', textAlign: 'center' }}>🌊 Mariscales 🦑</h1>
+        <div style={{ backgroundColor: '#222', padding: '20px', borderRadius: '15px', width: '100%', maxWidth: '350px' }}>
+          <form onSubmit={modoRegistro ? manejarRegistro : manejarLogin} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {modoRegistro && <input type="text" placeholder="Tu Nombre" value={authNombre} onChange={(e) => setAuthNombre(e.target.value)} style={{ padding: '10px', borderRadius: '5px' }} required />}
+            <input type="email" placeholder="Correo electrónico" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} style={{ padding: '10px', borderRadius: '5px' }} required />
+            <input type="password" placeholder="Contraseña" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} style={{ padding: '10px', borderRadius: '5px' }} required />
+            <button type="submit" style={{ padding: '12px', backgroundColor: '#e67e22', color: 'white', border: 'none', borderRadius: '5px', fontWeight: 'bold' }}>
               {modoRegistro ? "Registrarse y Jugar" : "Entrar a la Cocina"}
             </button>
           </form>
-
-          <div style={{ textAlign: 'center', marginTop: '20px' }}>
-            <button onClick={() => { setModoRegistro(!modoRegistro); setAuthError(""); }} style={{ background: 'none', border: 'none', color: '#3498db', textDecoration: 'underline', cursor: 'pointer', fontSize: '1rem' }}>
-              {modoRegistro ? "¿Ya tienes cuenta? Inicia sesión aquí" : "¿No tienes cuenta? Regístrate aquí"}
-            </button>
-          </div>
+          <button onClick={() => { setModoRegistro(!modoRegistro); setAuthError(""); }} style={{ background: 'none', border: 'none', color: '#3498db', cursor: 'pointer', marginTop: '15px', width: '100%' }}>
+            {modoRegistro ? "Ya tengo cuenta" : "Crear cuenta"}
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ fontFamily: 'sans-serif', backgroundColor: '#1a252f', minHeight: '100vh', display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
+    <div style={{ fontFamily: 'sans-serif', backgroundColor: '#1a120b', height: '100vh', width: '100vw', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxSizing: 'border-box' }}>
       
-      {/* BARRA SUPERIOR OSCURA (Estilo UI de videojuego) */}
-      <header style={{ backgroundColor: '#2c3e50', padding: '10px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.3)', zIndex: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <h1 style={{ color: '#f39c12', margin: 0, fontSize: '1.8rem', textShadow: '1px 1px 2px black' }}>🌊 Mariscales 🦑</h1>
-          <span style={{ color: '#ecf0f1', fontSize: '1.2rem', fontWeight: 'bold', backgroundColor: 'rgba(0,0,0,0.3)', padding: '5px 15px', borderRadius: '20px' }}>{mensaje}</span>
+      {/* ENCABEZADO ULTRA COMPACTO PARA MÓVIL */}
+      <header style={{ backgroundColor: '#0f0f0f', padding: '5px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #333', zIndex: 10, height: '12vh', minHeight: '40px' }}>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h1 style={{ color: '#f39c12', margin: 0, fontSize: '1rem' }}>🌊🦑</h1>
+          <span style={{ color: '#fff', fontSize: '0.8rem', backgroundColor: '#333', padding: '2px 6px', borderRadius: '5px' }}>{mensaje}</span>
         </div>
         
-        {/* Marcadores integrados a la barra */}
-        <div style={{ display: 'flex', gap: '20px', fontSize: "1.2rem", backgroundColor: '#34495e', padding: '8px 20px', borderRadius: '10px', border: '2px solid #2c3e50' }}>
+        <div style={{ display: 'flex', gap: '8px', fontSize: "0.9rem", backgroundColor: '#222', padding: '4px 8px', borderRadius: '5px', border: '1px solid #444' }}>
           <span style={{ color: "#f1c40f", fontWeight: 'bold' }}>⭐ {puntos}</span>
           <span style={{ color: "#e74c3c", fontWeight: 'bold' }}>⏳ {contador}s</span>
-          <span style={{ color: "#ff7675", fontWeight: 'bold', letterSpacing: '2px' }}>{"❤️".repeat(vidas > 0 ? vidas : 0)}</span>
+          <span style={{ color: "#ff7675", fontWeight: 'bold' }}>{"❤️".repeat(vidas > 0 ? vidas : 0)}</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          <span style={{ fontWeight: 'bold', color: '#ecf0f1' }}>{usuario.displayName || usuario.email}</span>
-          <button onClick={cerrarSesion} style={{ padding: '6px 15px', backgroundColor: '#c0392b', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>Salir</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontWeight: 'bold', color: '#ccc', fontSize: '0.8rem' }}>{usuario.displayName || usuario.email.split('@')[0]}</span>
+          <button onClick={cerrarSesion} style={{ padding: '4px 8px', backgroundColor: '#c0392b', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '0.7rem' }}>Salir</button>
         </div>
       </header>
 
-      {/* ESTACIÓN DE TRABAJO (Diseño Papa's Pizzeria / Arcade) */}
-      {/* ESTACIÓN DE TRABAJO (Diseño Papa's Pizzeria / Arcade) */}
-      {/* ESTACIÓN DE TRABAJO (Diseño Responsivo: Arcade en PC / Apilado en Celular) */}
+      {/* ESTACIÓN ARCADE - ESTRICTAMENTE HORIZONTAL Y BLOQUEADA */}
       <main style={{ 
         flex: 1, 
+        height: '88vh', /* Ocupa exactamente el resto de la pantalla */
         display: 'flex', 
-        flexWrap: 'wrap', /* 👈 LA MAGIA: Si no hay espacio, tira el contenido hacia abajo */
-        justifyContent: 'center', /* Centra todo en el celular */
-        backgroundColor: '#d39e66', 
-        backgroundImage: 'linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px)',
-        backgroundSize: '40px 40px', 
-        borderTop: '8px solid #8b5a2b',
-        boxShadow: 'inset 0 20px 30px rgba(0,0,0,0.1)',
+        flexDirection: 'row', 
+        flexWrap: 'nowrap', /* EVITA QUE SE APILEN VERTICALMENTE */
+        backgroundColor: '#3e2723', 
         position: 'relative'
-        /* OJO: Quitamos "overflow: hidden" para que en el celular se pueda hacer scroll hacia abajo sin que corte el juego */
       }}>
         
         {juegoTerminado ? (
-          // PANTALLA DE GAME OVER
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', paddingTop: '5%', zIndex: 100, minHeight: '100%' }}>
-            <div style={{ backgroundColor: '#ecf0f1', padding: '30px', borderRadius: '15px', border: '5px solid #e74c3c', width: '90%', maxWidth: '500px', textAlign: 'center', marginBottom: '50px' }}>
-              <h2 style={{ color: '#c0392b', fontSize: '2.5rem', marginTop: 0 }}>¡Estás Despedido!</h2>
-              <p style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Tu puntaje final: {puntos} Pts.</p>
-              
+          <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 100 }}>
+            <div style={{ backgroundColor: '#ecf0f1', padding: '20px', borderRadius: '15px', border: '4px solid #e74c3c', width: '80%', maxWidth: '400px', textAlign: 'center' }}>
+              <h2 style={{ color: '#c0392b', marginTop: 0 }}>Game Over</h2>
+              <p>Puntaje: {puntos} Pts</p>
               {!puntajeGuardado ? (
-                <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#bdc3c7', borderRadius: '10px' }}>
-                  <button onClick={guardarPuntaje} style={{ padding: '15px 25px', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem', boxShadow: '0 4px 0 #2980b9', width: '100%' }}>
-                    💾 Subir Récord a la Nube
-                  </button>
-                </div>
+                <button onClick={guardarPuntaje} style={{ padding: '10px 20px', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', width: '100%', marginBottom: '10px' }}>💾 Guardar Récord</button>
               ) : (
-                <p style={{ color: '#27ae60', fontWeight: 'bold', fontSize: '1.2rem', backgroundColor: '#e8f8f5', padding: '10px', borderRadius: '5px' }}>✅ ¡Récord registrado con éxito!</p>
+                <p style={{ color: '#27ae60', fontWeight: 'bold' }}>✅ Guardado</p>
               )}
-
-              {rankingTop.length > 0 && (
-                <div style={{ textAlign: 'left', backgroundColor: '#fff', padding: '15px', borderRadius: '10px', marginBottom: '20px', border: '2px solid #bdc3c7' }}>
-                  <h3 style={{ margin: '0 0 10px 0', color: '#f39c12', textAlign: 'center' }}>🏆 Salón de la Fama</h3>
-                  <ul style={{ listStyleType: 'none', padding: 0, margin: 0 }}>
-                    {rankingTop.map((jugador, index) => (
-                      <li key={index} style={{ padding: '8px 10px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', fontSize: '1.1rem', backgroundColor: index === 0 ? '#fff9e6' : 'transparent' }}>
-                        <span><strong>#{index + 1}</strong> {jugador.nombre}</span>
-                        <span style={{ fontWeight: 'bold', color: '#27ae60' }}>{jugador.puntos} pts</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              
-              <button onClick={reiniciarJuego} style={{ padding: '15px', fontSize: '1.3rem', backgroundColor: '#2ecc71', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', width: '100%', boxShadow: '0 4px 0 #27ae60' }}>
-                🔄 Iniciar Nuevo Turno
-              </button>
+              <button onClick={reiniciarJuego} style={{ padding: '10px 20px', backgroundColor: '#2ecc71', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', width: '100%' }}>🔄 Volver a Jugar</button>
             </div>
           </div>
         ) : (
-          // JUEGO ACTIVO (Diseño adaptable)
           <>
-            {/* ZONA 1: Cuerda de Pedidos */}
-            <div style={{ flex: '1 1 250px', backgroundColor: 'rgba(0,0,0,0.1)', borderRight: '2px dashed #8b5a2b', padding: '15px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <Ticket pedidoActual={pedidoActual} />
+            {/* COLUMNA 1: TICKET (25% de ancho) */}
+            <div style={{ width: '25%', height: '100%', backgroundColor: 'rgba(0,0,0,0.2)', borderRight: '2px solid #1f1209', padding: '5px', overflowY: 'auto' }}>
+              <div style={{ transform: 'scale(0.85)', transformOrigin: 'top center' }}>
+                <Ticket pedidoActual={pedidoActual} />
+              </div>
             </div>
 
-            {/* ZONA 2: Mesón de Preparación */}
-            <div style={{ flex: '2 1 320px', padding: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px' }}>
-              {/* Le apliqué un pequeño zoom-out nativo (scale) para asegurar que el plato gigante quepa sin problemas en la pantalla de un celular */}
-              <div style={{ transform: 'scale(0.85)', transformOrigin: 'center center' }}>
+            {/* COLUMNA 2: EMPANADA Y CONTROLS (50% de ancho) */}
+            <div style={{ width: '50%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', padding: '5px', position: 'relative' }}>
+              
+              {/* Empanada escalada para que no se desborde */}
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', transform: 'scale(0.55)', transformOrigin: 'center center', width: '100%' }}>
                 <Empanada 
                   empanada={empanada} 
                   agregarIngrediente={agregarIngrediente} 
@@ -369,20 +321,21 @@ export default function App() {
                   agregarBebida={agregarBebida} 
                 />
               </div>
-            </div>
 
-            {/* ZONA 3: Bandejas e Ingredientes + Controles */}
-            <div style={{ flex: '1 1 300px', backgroundColor: '#a67b5b', borderLeft: '2px dashed #8b5a2b', padding: '15px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              <div style={{ backgroundColor: 'rgba(255,255,255,0.8)', padding: '15px', borderRadius: '10px', border: '3px solid #8b5a2b' }}>
-                <Inventario inventario={inventario} inventarioEspecial={inventarioEspecial} inventarioBebidas={inventarioBebidas} />
-              </div>
-
-              <div style={{ backgroundColor: '#2c3e50', padding: '15px', borderRadius: '10px', border: '4px solid #34495e', display: 'flex', justifyContent: 'center' }}>
+              {/* Botones de acción */}
+              <div style={{ width: '90%', paddingBottom: '10px', transform: 'scale(0.9)' }}>
                 <Controles 
                   limpiar={() => { setEmpanada({ izquierda: [], derecha: [] }); setBebidaPlato(null); }} 
                   entregar={entregarPedido} 
                 />
               </div>
+            </div>
+
+            {/* COLUMNA 3: INVENTARIO (25% de ancho) */}
+            <div style={{ width: '25%', height: '100%', backgroundColor: '#2d1b11', borderLeft: '2px solid #1f1209', padding: '5px', overflowY: 'auto' }}>
+               <div style={{ transform: 'scale(0.85)', transformOrigin: 'top center' }}>
+                 <Inventario inventario={inventario} inventarioEspecial={inventarioEspecial} inventarioBebidas={inventarioBebidas} />
+               </div>
             </div>
           </>
         )}
