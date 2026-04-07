@@ -229,16 +229,16 @@ export default function App() {
   };
 
   if (cargandoAuth) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'sans-serif', backgroundColor: '#fdf2e9' }}><h2>Cargando local...</h2></div>;
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'sans-serif', backgroundColor: '#2c3e50', color: 'white' }}><h2>Cargando estación...</h2></div>;
   }
 
   if (!usuario) {
     return (
-      <div style={{ fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#fdf2e9', padding: '20px' }}>
-        <h1 style={{ color: '#d35400', fontSize: '3rem', marginBottom: '10px', textAlign: 'center' }}>🌊 Mariscales 🦑</h1>
+      <div style={{ fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#2c3e50', padding: '20px' }}>
+        <h1 style={{ color: '#f39c12', fontSize: '3.5rem', marginBottom: '10px', textAlign: 'center', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>🌊 Mariscales 🦑</h1>
         
-        <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '15px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', width: '100%', maxWidth: '400px' }}>
-          <h2 style={{ textAlign: 'center', color: '#2980b9', marginTop: '0' }}>
+        <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '15px', boxShadow: '0 10px 25px rgba(0,0,0,0.3)', width: '100%', maxWidth: '400px' }}>
+          <h2 style={{ textAlign: 'center', color: '#2c3e50', marginTop: '0' }}>
             {modoRegistro ? "Crear Nueva Cuenta" : "Iniciar Sesión"}
           </h2>
           
@@ -259,7 +259,7 @@ export default function App() {
               type="password" placeholder="Contraseña (mínimo 6 caracteres)" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)}
               style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '1rem' }} required 
             />
-            <button type="submit" style={{ padding: '15px', fontSize: '1.2rem', backgroundColor: '#2ecc71', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', marginTop: '10px' }}>
+            <button type="submit" style={{ padding: '15px', fontSize: '1.2rem', backgroundColor: '#e67e22', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', marginTop: '10px', boxShadow: '0 4px 0 #d35400' }}>
               {modoRegistro ? "Registrarse y Jugar" : "Entrar a la Cocina"}
             </button>
           </form>
@@ -275,104 +275,118 @@ export default function App() {
   }
 
   return (
-    <div style={{ fontFamily: 'sans-serif', padding: '10px', backgroundColor: '#fdf2e9', minHeight: '100vh', boxSizing: 'border-box' }}>
+    <div style={{ fontFamily: 'sans-serif', backgroundColor: '#1a252f', minHeight: '100vh', display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
       
-      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '10px', padding: '10px', maxWidth: '1400px', margin: '0 auto' }}>
-        <span style={{ fontWeight: 'bold', color: '#333' }}>Cocinero: {usuario.displayName || usuario.email}</span>
-        <button onClick={cerrarSesion} style={{ padding: '8px 12px', backgroundColor: '#e74c3c', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Salir</button>
-      </div>
-
-      <header style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <h1 style={{ color: '#d35400', fontSize: 'clamp(1.5rem, 5vw, 2.5rem)', margin: '0' }}>🌊 Mariscales 🦑</h1>
-        <p style={{ fontWeight: 'bold', color: '#2980b9', fontSize: '1.2rem' }}>{mensaje}</p>
-
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', fontSize: "1.2rem", marginTop: '10px', flexWrap: 'wrap' }}>
-          <span style={{ color: "#f39c12", fontWeight: 'bold' }}>⭐ Puntos: {puntos}</span>
-          <span style={{ color: "#c0392b", fontWeight: 'bold' }}>⏳ Tiempo: {contador}s</span>
-          <span style={{ color: "#e74c3c", fontWeight: 'bold' }}>❤️ Vidas: {"❤️".repeat(vidas > 0 ? vidas : 0)}</span>
+      {/* BARRA SUPERIOR OSCURA (Estilo UI de videojuego) */}
+      <header style={{ backgroundColor: '#2c3e50', padding: '10px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.3)', zIndex: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <h1 style={{ color: '#f39c12', margin: 0, fontSize: '1.8rem', textShadow: '1px 1px 2px black' }}>🌊 Mariscales 🦑</h1>
+          <span style={{ color: '#ecf0f1', fontSize: '1.2rem', fontWeight: 'bold', backgroundColor: 'rgba(0,0,0,0.3)', padding: '5px 15px', borderRadius: '20px' }}>{mensaje}</span>
+        </div>
+        
+        {/* Marcadores integrados a la barra */}
+        <div style={{ display: 'flex', gap: '20px', fontSize: "1.2rem", backgroundColor: '#34495e', padding: '8px 20px', borderRadius: '10px', border: '2px solid #2c3e50' }}>
+          <span style={{ color: "#f1c40f", fontWeight: 'bold' }}>⭐ {puntos}</span>
+          <span style={{ color: "#e74c3c", fontWeight: 'bold' }}>⏳ {contador}s</span>
+          <span style={{ color: "#ff7675", fontWeight: 'bold', letterSpacing: '2px' }}>{"❤️".repeat(vidas > 0 ? vidas : 0)}</span>
         </div>
 
-        {juegoTerminado && (
-          <div style={{ marginTop: '20px', padding: '20px', backgroundColor: '#fff', borderRadius: '15px', border: '3px solid #e74c3c', display: 'inline-block', minWidth: '300px' }}>
-            {!puntajeGuardado ? (
-              <div style={{ marginBottom: '20px', borderBottom: '2px solid #eee', paddingBottom: '20px' }}>
-                <p style={{ marginBottom: '10px', fontWeight: 'bold', fontSize: '1.1rem' }}>Guardar récord como: <span style={{color: '#2980b9'}}>{usuario.displayName || usuario.email}</span></p>
-                <button onClick={guardarPuntaje} style={{ padding: '10px 20px', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.1rem' }}>
-                  💾 Subir a la Nube
-                </button>
-              </div>
-            ) : (
-              <p style={{ color: '#27ae60', fontWeight: 'bold', marginBottom: '15px', fontSize: '1.2rem' }}>¡Récord registrado con éxito!</p>
-            )}
-
-            {rankingTop.length > 0 && (
-              <div style={{ textAlign: 'left', backgroundColor: '#f9f9f9', padding: '15px', borderRadius: '10px', marginBottom: '20px' }}>
-                <h3 style={{ margin: '0 0 15px 0', color: '#f39c12', textAlign: 'center' }}>🏆 Top 5 Mejores Jugadores</h3>
-                <ul style={{ listStyleType: 'none', padding: 0, margin: 0 }}>
-                  {rankingTop.map((jugador, index) => (
-                    <li key={index} style={{ padding: '8px 0', borderBottom: '1px solid #ddd', display: 'flex', justifyContent: 'space-between', fontSize: '1.1rem' }}>
-                      <span><strong>#{index + 1}</strong> {jugador.nombre}</span>
-                      <span style={{ fontWeight: 'bold', color: '#27ae60' }}>{jugador.puntos} pts</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            
-            <button onClick={reiniciarJuego} style={{ padding: '12px 25px', fontSize: '1.2rem', backgroundColor: '#2ecc71', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', display: 'block', margin: '0 auto', width: '100%' }}>
-              🔄 Volver a jugar
-            </button>
-          </div>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <span style={{ fontWeight: 'bold', color: '#ecf0f1' }}>{usuario.displayName || usuario.email}</span>
+          <button onClick={cerrarSesion} style={{ padding: '6px 15px', backgroundColor: '#c0392b', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>Salir</button>
+        </div>
       </header>
 
-      {/* NUEVO DISEÑO HORIZONTAL EN 3 COLUMNAS */}
-      {!juegoTerminado && (
-        <main style={{ 
-          display: 'flex', 
-          flexWrap: 'wrap', 
-          flexDirection: 'row', 
-          gap: '20px', 
-          justifyContent: 'center', 
-          alignItems: 'flex-start', 
-          maxWidth: '1400px', 
-          margin: '0 auto',
-          opacity: juegoTerminado ? 0.6 : 1, 
-          pointerEvents: juegoTerminado ? 'none' : 'auto' 
-        }}>
-          
-          {/* COLUMNA 1: Ticket de Pedido (Izquierda) */}
-          <div style={{ flex: '1 1 250px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            <Ticket pedidoActual={pedidoActual} />
-          </div>
+      {/* ESTACIÓN DE TRABAJO (Diseño Papa's Pizzeria / Arcade) */}
+      <main style={{ 
+        flex: 1, 
+        display: 'flex', 
+        backgroundColor: '#d39e66', /* Color de madera clara */
+        backgroundImage: 'linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px)',
+        backgroundSize: '40px 40px', /* Simula tablones de madera */
+        borderTop: '8px solid #8b5a2b',
+        boxShadow: 'inset 0 20px 30px rgba(0,0,0,0.1)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        
+        {juegoTerminado ? (
+          // PANTALLA DE GAME OVER 
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 100 }}>
+            <div style={{ backgroundColor: '#ecf0f1', padding: '30px', borderRadius: '15px', border: '5px solid #e74c3c', width: '90%', maxWidth: '500px', textAlign: 'center' }}>
+              <h2 style={{ color: '#c0392b', fontSize: '2.5rem', marginTop: 0 }}>¡Estás Despedido!</h2>
+              <p style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Tu puntaje final: {puntos} Pts.</p>
+              
+              {!puntajeGuardado ? (
+                <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#bdc3c7', borderRadius: '10px' }}>
+                  <button onClick={guardarPuntaje} style={{ padding: '15px 25px', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem', boxShadow: '0 4px 0 #2980b9', width: '100%' }}>
+                    💾 Subir Récord a la Nube
+                  </button>
+                </div>
+              ) : (
+                <p style={{ color: '#27ae60', fontWeight: 'bold', fontSize: '1.2rem', backgroundColor: '#e8f8f5', padding: '10px', borderRadius: '5px' }}>✅ ¡Récord registrado con éxito!</p>
+              )}
 
-          {/* COLUMNA 2: Mesón Central y Controles (Centro) */}
-          <div style={{ flex: '2 1 450px', border: '3px solid #ff9800', padding: '20px', borderRadius: '15px', backgroundColor: '#fff3e0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <h2 style={{ marginTop: 0, color: '#d35400' }}>🍲 Mesón Central</h2>
-            
-            <Empanada 
-              empanada={empanada} 
-              agregarIngrediente={agregarIngrediente} 
-              bebidaPlato={bebidaPlato} 
-              agregarBebida={agregarBebida} 
-            />
-
-            <div style={{ marginTop: '20px', width: '100%', display: 'flex', justifyContent: 'center' }}>
-              <Controles 
-                limpiar={() => { setEmpanada({ izquierda: [], derecha: [] }); setBebidaPlato(null); }} 
-                entregar={entregarPedido} 
-              />
+              {rankingTop.length > 0 && (
+                <div style={{ textAlign: 'left', backgroundColor: '#fff', padding: '15px', borderRadius: '10px', marginBottom: '20px', border: '2px solid #bdc3c7' }}>
+                  <h3 style={{ margin: '0 0 10px 0', color: '#f39c12', textAlign: 'center' }}>🏆 Salón de la Fama</h3>
+                  <ul style={{ listStyleType: 'none', padding: 0, margin: 0 }}>
+                    {rankingTop.map((jugador, index) => (
+                      <li key={index} style={{ padding: '8px 10px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', fontSize: '1.1rem', backgroundColor: index === 0 ? '#fff9e6' : 'transparent' }}>
+                        <span><strong>#{index + 1}</strong> {jugador.nombre}</span>
+                        <span style={{ fontWeight: 'bold', color: '#27ae60' }}>{jugador.puntos} pts</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              <button onClick={reiniciarJuego} style={{ padding: '15px', fontSize: '1.3rem', backgroundColor: '#2ecc71', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', width: '100%', boxShadow: '0 4px 0 #27ae60' }}>
+                🔄 Iniciar Nuevo Turno
+              </button>
             </div>
           </div>
+        ) : (
+          // JUEGO ACTIVO (Diseño 3 Columnas Estilo Arcade)
+          <>
+            {/* ZONA 1: Cuerda de Pedidos (Izquierda) */}
+            <div style={{ width: '25%', minWidth: '250px', backgroundColor: 'rgba(0,0,0,0.1)', borderRight: '4px solid #8b5a2b', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '5px 0 15px rgba(0,0,0,0.1)' }}>
+              {/* Cuerda decorativa */}
+              <div style={{ width: '100%', height: '4px', backgroundColor: '#7f8c8d', position: 'absolute', top: '30px', left: 0, zIndex: 0 }}></div>
+              <div style={{ zIndex: 1, marginTop: '20px', width: '100%' }}>
+                <Ticket pedidoActual={pedidoActual} />
+              </div>
+            </div>
 
-          {/* COLUMNA 3: Inventario de Ingredientes (Derecha) */}
-          <div style={{ flex: '1 1 300px', border: '3px solid #3498db', padding: '20px', borderRadius: '15px', backgroundColor: '#ebf5fb' }}>
-            <h2 style={{ marginTop: 0, textAlign: 'center', color: '#2980b9' }}>📦 Inventario</h2>
-            <Inventario inventario={inventario} inventarioEspecial={inventarioEspecial} inventarioBebidas={inventarioBebidas} />
-          </div>
+            {/* ZONA 2: Mesón de Preparación (Centro) */}
+            <div style={{ flex: 1, padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
+              <div style={{ width: '100%', display: 'flex', justifyContent: 'center', flex: 1, alignItems: 'center' }}>
+                <Empanada 
+                  empanada={empanada} 
+                  agregarIngrediente={agregarIngrediente} 
+                  bebidaPlato={bebidaPlato} 
+                  agregarBebida={agregarBebida} 
+                />
+              </div>
 
-        </main>
-      )}
+              {/* Botones estilo consola de máquina */}
+              <div style={{ width: '100%', backgroundColor: '#2c3e50', padding: '15px', borderRadius: '15px 15px 0 0', borderTop: '4px solid #34495e', display: 'flex', justifyContent: 'center' }}>
+                <Controles 
+                  limpiar={() => { setEmpanada({ izquierda: [], derecha: [] }); setBebidaPlato(null); }} 
+                  entregar={entregarPedido} 
+                />
+              </div>
+            </div>
+
+            {/* ZONA 3: Bandejas de Ingredientes (Derecha) */}
+            <div style={{ width: '30%', minWidth: '300px', backgroundColor: '#a67b5b', borderLeft: '4px solid #8b5a2b', padding: '20px', boxShadow: 'inset 5px 0 15px rgba(0,0,0,0.2)', overflowY: 'auto' }}>
+              <div style={{ backgroundColor: 'rgba(255,255,255,0.8)', padding: '15px', borderRadius: '10px', border: '3px solid #8b5a2b' }}>
+                <Inventario inventario={inventario} inventarioEspecial={inventarioEspecial} inventarioBebidas={inventarioBebidas} />
+              </div>
+            </div>
+          </>
+        )}
+      </main>
     </div>
   );
 }

@@ -15,31 +15,47 @@ export default function Inventario({ inventario, inventarioEspecial, inventarioB
 
   return (
     <div className={styles.inventario}>
-      <h3>Ingredientes Básicos</h3>
       <div className={styles.lista}>
+        
+        {/* BÁSICOS: Color Naranja */}
         {inventario.map((item, index) => (
-          <div key={index} draggable onDragStart={(e) => crearFantasma(e, item, "ingrediente")} className={styles.ingrediente}>
-            {item}
+          <div 
+            key={`basico-${index}`} 
+            draggable 
+            onDragStart={(e) => crearFantasma(e, item, "ingrediente")} 
+            className={`${styles.ingrediente} ${styles.naranja}`}
+            title={item} 
+          >
+            {item.split(' ')[0]} {/* Extrae solo el emoji */}
           </div>
         ))}
-      </div>
 
-      <h3 style={{ marginTop: '15px' }}>Ingredientes Especiales (Nivel 4+)</h3>
-      <div className={styles.lista}>
+        {/* ESPECIALES (Nivel 4+): Color Morado */}
         {inventarioEspecial.map((item, index) => (
-          <div key={index} draggable onDragStart={(e) => crearFantasma(e, item, "ingrediente")} className={styles.ingrediente} style={{borderColor: '#9b59b6', background: '#f5eef8'}}>
-            {item}
+          <div 
+            key={`esp-${index}`} 
+            draggable 
+            onDragStart={(e) => crearFantasma(e, item, "ingrediente")} 
+            className={`${styles.ingrediente} ${styles.morado}`}
+            title={item}
+          >
+            {item.split(' ')[0]}
           </div>
         ))}
-      </div>
 
-      <h3 style={{ marginTop: '15px' }}>Bebidas (Para el plato)</h3>
-      <div className={styles.lista}>
+        {/* BEBIDAS: Color Verde */}
         {inventarioBebidas.map((item, index) => (
-          <div key={index} draggable onDragStart={(e) => crearFantasma(e, item, "bebida")} className={styles.ingrediente} style={{borderColor: '#3498db', background: '#ebf5fb'}}>
-            {item}
+          <div 
+            key={`bebida-${index}`} 
+            draggable 
+            onDragStart={(e) => crearFantasma(e, item, "bebida")} 
+            className={`${styles.ingrediente} ${styles.verde}`}
+            title={item}
+          >
+            {item.split(' ')[0]}
           </div>
         ))}
+
       </div>
     </div>
   );
