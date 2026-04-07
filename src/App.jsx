@@ -298,12 +298,13 @@ export default function App() {
       </header>
 
       {/* ESTACIÓN DE TRABAJO (Diseño Papa's Pizzeria / Arcade) */}
+      {/* ESTACIÓN DE TRABAJO (Diseño Papa's Pizzeria / Arcade) */}
       <main style={{ 
         flex: 1, 
         display: 'flex', 
-        backgroundColor: '#d39e66', /* Color de madera clara */
+        backgroundColor: '#d39e66', 
         backgroundImage: 'linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px)',
-        backgroundSize: '40px 40px', /* Simula tablones de madera */
+        backgroundSize: '40px 40px', 
         borderTop: '8px solid #8b5a2b',
         boxShadow: 'inset 0 20px 30px rgba(0,0,0,0.1)',
         position: 'relative',
@@ -311,7 +312,7 @@ export default function App() {
       }}>
         
         {juegoTerminado ? (
-          // PANTALLA DE GAME OVER 
+          // ... (Todo el bloque de Game Over déjalo tal cual lo tenías)
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 100 }}>
             <div style={{ backgroundColor: '#ecf0f1', padding: '30px', borderRadius: '15px', border: '5px solid #e74c3c', width: '90%', maxWidth: '500px', textAlign: 'center' }}>
               <h2 style={{ color: '#c0392b', fontSize: '2.5rem', marginTop: 0 }}>¡Estás Despedido!</h2>
@@ -347,11 +348,10 @@ export default function App() {
             </div>
           </div>
         ) : (
-          // JUEGO ACTIVO (Diseño 3 Columnas Estilo Arcade)
+          // JUEGO ACTIVO (Diseño 3 Columnas)
           <>
             {/* ZONA 1: Cuerda de Pedidos (Izquierda) */}
             <div style={{ width: '25%', minWidth: '250px', backgroundColor: 'rgba(0,0,0,0.1)', borderRight: '4px solid #8b5a2b', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', boxShadow: '5px 0 15px rgba(0,0,0,0.1)' }}>
-              {/* Cuerda decorativa */}
               <div style={{ width: '100%', height: '4px', backgroundColor: '#7f8c8d', position: 'absolute', top: '30px', left: 0, zIndex: 0 }}></div>
               <div style={{ zIndex: 1, marginTop: '20px', width: '100%' }}>
                 <Ticket pedidoActual={pedidoActual} />
@@ -359,30 +359,31 @@ export default function App() {
             </div>
 
             {/* ZONA 2: Mesón de Preparación (Centro) */}
-            <div style={{ flex: 1, padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
-              <div style={{ width: '100%', display: 'flex', justifyContent: 'center', flex: 1, alignItems: 'center' }}>
-                <Empanada 
-                  empanada={empanada} 
-                  agregarIngrediente={agregarIngrediente} 
-                  bebidaPlato={bebidaPlato} 
-                  agregarBebida={agregarBebida} 
-                />
+            <div style={{ flex: 1, padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+              <Empanada 
+                empanada={empanada} 
+                agregarIngrediente={agregarIngrediente} 
+                bebidaPlato={bebidaPlato} 
+                agregarBebida={agregarBebida} 
+              />
+            </div>
+
+            {/* ZONA 3: Bandejas de Ingredientes y Controles (Derecha) */}
+            <div style={{ width: '30%', minWidth: '300px', backgroundColor: '#a67b5b', borderLeft: '4px solid #8b5a2b', padding: '20px', boxShadow: 'inset 5px 0 15px rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              
+              {/* Bloque de Ingredientes de Colores */}
+              <div style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.8)', padding: '15px', borderRadius: '10px', border: '3px solid #8b5a2b', overflowY: 'auto' }}>
+                <Inventario inventario={inventario} inventarioEspecial={inventarioEspecial} inventarioBebidas={inventarioBebidas} />
               </div>
 
-              {/* Botones estilo consola de máquina */}
-              <div style={{ width: '100%', backgroundColor: '#2c3e50', padding: '15px', borderRadius: '15px 15px 0 0', borderTop: '4px solid #34495e', display: 'flex', justifyContent: 'center' }}>
+              {/* Bloque de Botones (Movidos debajo del inventario) */}
+              <div style={{ backgroundColor: '#2c3e50', padding: '15px', borderRadius: '10px', border: '4px solid #34495e', display: 'flex', justifyContent: 'center' }}>
                 <Controles 
                   limpiar={() => { setEmpanada({ izquierda: [], derecha: [] }); setBebidaPlato(null); }} 
                   entregar={entregarPedido} 
                 />
               </div>
-            </div>
 
-            {/* ZONA 3: Bandejas de Ingredientes (Derecha) */}
-            <div style={{ width: '30%', minWidth: '300px', backgroundColor: '#a67b5b', borderLeft: '4px solid #8b5a2b', padding: '20px', boxShadow: 'inset 5px 0 15px rgba(0,0,0,0.2)', overflowY: 'auto' }}>
-              <div style={{ backgroundColor: 'rgba(255,255,255,0.8)', padding: '15px', borderRadius: '10px', border: '3px solid #8b5a2b' }}>
-                <Inventario inventario={inventario} inventarioEspecial={inventarioEspecial} inventarioBebidas={inventarioBebidas} />
-              </div>
             </div>
           </>
         )}

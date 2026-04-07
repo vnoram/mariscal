@@ -1,28 +1,49 @@
 .inventario {
-  padding: 10px;
+  padding: 5px;
 }
 
 .lista {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
+  justify-content: center; /* Centra los botones en el panel */
 }
 
 .ingrediente {
-  background: #ffe0b2;
-  padding: 10px 15px;
-  border-radius: 10px;
+  width: 65px; /* Botón cuadrado */
+  height: 65px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 15px; /* Bordes redondeados estilo app */
   cursor: grab;
-  font-size: 1.5rem;
-  border: 2px solid #ff9800;
-  transition: transform 0.1s;
+  font-size: 2.2rem; /* Emoji más grande */
+  border: 3px solid transparent;
+  transition: transform 0.1s, box-shadow 0.1s;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.15); /* Sombra 3D */
   
-  /* ¡ESTA ES LA LÍNEA MÁGICA PARA MÓVILES! */
-  /* Le dice al celular: "No muevas la pantalla si me tocan" */
+  /* Evita que se mueva la pantalla en móviles al arrastrar */
   touch-action: none;
 }
 
 .ingrediente:active {
   cursor: grabbing;
-  transform: scale(1.1);
+  transform: scale(1.15); /* Efecto al presionar */
+  box-shadow: 0 8px 15px rgba(0,0,0,0.25);
+}
+
+/* --- CLASES DE COLORES --- */
+.naranja {
+  background: #ffe0b2;
+  border-color: #ff9800;
+}
+
+.morado {
+  background: #f5eef8;
+  border-color: #9b59b6;
+}
+
+.verde {
+  background: #e9f7ef;
+  border-color: #2ecc71;
 }
