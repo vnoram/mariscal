@@ -1,252 +1,60 @@
-import { useState, useEffect } from "react";
-import Ticket from "./components/Ticket";
-import Inventario from "./components/Inventario";
-import Empanada from "./components/Empanada";
-import Controles from "./components/Controles";
+import Ticket     from "./components/Ticket";
+import Inventario  from "./components/Inventario";
+import Empanada    from "./components/Empanada";
+import Controles   from "./components/Controles";
 
-// FIREBASE
-import { db, auth } from "./lib/firebase"; 
-import { collection, addDoc, getDocs, query, orderBy, limit } from "firebase/firestore";
-import { 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  updateProfile, 
-  signOut, 
-  onAuthStateChanged 
-} from "firebase/auth";
-
-const inventario = ['🦐 Camarón', '🦪 Chorito', '🦀 Jaiba', '🍋 Limón', '🌿 Cilantro'];
-const inventarioEspecial = ['🧀 Queso', '🌶️ Ají', '🧅 Cebolla']; 
-// CAMBIO APLICADO: Reemplazo de Pepsi por Cerveza
-const inventarioBebidas = ['🥤 Coca-Cola', '🍺 Cerveza', '🍷 Vino']; 
+import { useAuth } from "./hooks/useAuth";
+import { useGame, inventario, inventarioEspecial, inventarioBebidas } from "./hooks/useGame";
 
 export default function App() {
 
-  const [usuario, setUsuario] = useState(null);
-  const [cargandoAuth, setCargandoAuth] = useState(true);
-  const [modoRegistro, setModoRegistro] = useState(false);
-  
-  const [authNombre, setAuthNombre] = useState("");
-  const [authEmail, setAuthEmail] = useState("");
-  const [authPassword, setAuthPassword] = useState("");
-  const [authError, setAuthError] = useState("");
+  // ── Autenticación ────────────────────────────────────────────────────────
+  const {
+    usuario, cargandoAuth,
+    modoRegistro, setModoRegistro,
+    authNombre,   setAuthNombre,
+    authEmail,    setAuthEmail,
+    authPassword, setAuthPassword,
+    authError,
+    manejarLogin, manejarRegistro, cerrarSesion,
+  } = useAuth();
 
-  const [empanada, setEmpanada] = useState({ izquierda: [], derecha: [] });
-  const [bebidaPlato, setBebidaPlato] = useState(null); 
-  const [pedidoActual, setPedidoActual] = useState(null);
-  const [mensaje, setMensaje] = useState("¡Abre el local!");
-  
-  const [contador, setContador] = useState(15); 
-  const [vidas, setVidas] = useState(3);
-  const [puntos, setPuntos] = useState(0);
-  const [juegoTerminado, setJuegoTerminado] = useState(false);
+  // ── Lógica del juego ─────────────────────────────────────────────────────
+  const {
+    empanada, bebidaPlato, pedidoActual, mensaje,
+    contador, vidas, puntos, juegoTerminado,
+    puntajeGuardado, rankingTop,
+    agregarIngrediente, agregarBebida, limpiarEmpanada,
+    entregarPedido, guardarPuntaje, reiniciarJuego,
+  } = useGame(usuario);
 
-  const [puntajeGuardado, setPuntajeGuardado] = useState(false);
-  const [rankingTop, setRankingTop] = useState([]); 
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUsuario(user);
-      setCargandoAuth(false);
-      if (user && !juegoTerminado && puntos === 0 && vidas === 3 && !pedidoActual) {
-        generarPedido(0);
-      }
-    });
-    return () => unsubscribe();
-  }, [juegoTerminado, puntos, vidas, pedidoActual]);
-
-  const manejarLogin = async (e) => {
-    e.preventDefault();
-    setAuthError("");
-    try {
-      await signInWithEmailAndPassword(auth, authEmail, authPassword);
-    } catch (error) {
-      setAuthError("Correo o contraseña incorrectos.");
-    }
-  };
-
-  const manejarRegistro = async (e) => {
-    e.preventDefault();
-    setAuthError("");
-    if (!authNombre.trim()) return setAuthError("El nombre es obligatorio.");
-    if (authPassword.length < 6) return setAuthError("La contraseña debe tener al menos 6 letras.");
-    
-    try {
-      const credenciales = await createUserWithEmailAndPassword(auth, authEmail, authPassword);
-      await updateProfile(credenciales.user, { displayName: authNombre });
-      setUsuario({ ...credenciales.user, displayName: authNombre });
-    } catch (error) {
-      if (error.code === 'auth/email-already-in-use') {
-        setAuthError("Este correo ya está registrado.");
-      } else {
-        setAuthError("Error al crear la cuenta.");
-      }
-    }
-  };
-
-  const cerrarSesion = async () => {
-    await signOut(auth);
-    setUsuario(null);
-    setAuthEmail("");
-    setAuthPassword("");
-  };
-
-  const generarPedido = (puntosActuales = puntos) => {
-    let minIng = 1, maxIng = 1;
-    let probBebida = 0.5; 
-    let usaEspeciales = false;
-
-    if (puntosActuales <= 5) {
-      minIng = 1; maxIng = 1; probBebida = 0.5; 
-    } else if (puntosActuales <= 12) {
-      minIng = 1; maxIng = 2; probBebida = 0.5; 
-    } else if (puntosActuales <= 20) {
-      minIng = 2; maxIng = 2; probBebida = 1.0; 
-    } else if (puntosActuales <= 30) {
-      minIng = 2; maxIng = 3; probBebida = 1.0; usaEspeciales = true; 
-    } else {
-      minIng = 3; maxIng = 3; probBebida = 1.0; usaEspeciales = true; 
-    }
-
-    const ingredientesDisponibles = usaEspeciales ? [...inventario, ...inventarioEspecial] : inventario;
-
-    const generarLado = () => {
-      const cantidad = Math.floor(Math.random() * (maxIng - minIng + 1)) + minIng;
-      const lado = [];
-      for (let i = 0; i < cantidad; i++) {
-        lado.push(ingredientesDisponibles[Math.floor(Math.random() * ingredientesDisponibles.length)]);
-      }
-      return lado;
-    };
-
-    const pideBebida = Math.random() < probBebida;
-
-    const nuevoPedido = {
-      izquierda: generarLado(),
-      derecha: generarLado(),
-      bebida: pideBebida ? inventarioBebidas[Math.floor(Math.random() * inventarioBebidas.length)] : null
-    };
-
-    setPedidoActual(nuevoPedido);
-    setEmpanada({ izquierda: [], derecha: [] });
-    setBebidaPlato(null); 
-    
-    const nivelActual = puntosActuales <= 5 ? 1 : puntosActuales <= 12 ? 2 : puntosActuales <= 20 ? 3 : puntosActuales <= 30 ? 4 : 5;
-    setMensaje(`¡Nivel ${nivelActual}!`);
-  };
-
-  useEffect(() => {
-    if (juegoTerminado || !usuario) return; 
-    const timer = setInterval(() => setContador((c) => c - 1), 1000);
-    return () => clearInterval(timer);
-  }, [juegoTerminado, usuario]);
-
-  useEffect(() => {
-    if (contador === 0 && !juegoTerminado) {
-      setVidas((v) => v - 1);
-      setMensaje("⏳ ¡Tiempo agotado!");
-      generarPedido(puntos); 
-      setContador(15); 
-    }
-  }, [contador, juegoTerminado]);
-
-  const cargarRanking = async () => {
-    try {
-      const q = query(collection(db, "ranking"), orderBy("puntos", "desc"), limit(5));
-      const querySnapshot = await getDocs(q);
-      const data = querySnapshot.docs.map(doc => doc.data());
-      setRankingTop(data);
-    } catch (error) {
-      console.error("Error al cargar ranking:", error);
-    }
-  };
-
-  useEffect(() => {
-    if (vidas <= 0 && !juegoTerminado) {
-      setJuegoTerminado(true);
-      setMensaje(`💀 Game Over`); 
-      cargarRanking(); 
-    }
-  }, [vidas, puntos, juegoTerminado]); 
-
-  const agregarIngrediente = (item, lado) => {
-    if (juegoTerminado) return;
-    setEmpanada(prev => ({ ...prev, [lado]: [...prev[lado], item] }));
-  };
-
-  const agregarBebida = (item) => {
-    if (juegoTerminado) return;
-    setBebidaPlato(item);
-  };
-
-  const entregarPedido = () => {
-    if (juegoTerminado || !pedidoActual) return setMensaje("No hay clientes.");
-
-    const esCorrecto =
-      JSON.stringify(empanada.izquierda.sort()) === JSON.stringify(pedidoActual.izquierda.sort()) &&
-      JSON.stringify(empanada.derecha.sort()) === JSON.stringify(pedidoActual.derecha.sort()) &&
-      bebidaPlato === pedidoActual.bebida; 
-
-    if (esCorrecto) {
-        const nuevosPuntos = puntos + 1;
-        setPuntos(nuevosPuntos); 
-        setMensaje("⭐⭐⭐⭐⭐ ¡Perfecto!");
-        setPedidoActual(null);
-        setEmpanada({ izquierda: [], derecha: [] });
-        setBebidaPlato(null); 
-        setContador(15); 
-        setTimeout(() => generarPedido(nuevosPuntos), 1500); 
-    } else {
-        setVidas((v) => v - 1);
-        setMensaje("❌ Pedido incorrecto");
-    }
-  };
-
-  const guardarPuntaje = async () => {
-    if (!usuario) return; 
-    try {
-      await addDoc(collection(db, "ranking"), {
-        nombre: usuario.displayName || "Cocinero Anónimo", 
-        puntos: puntos,
-        fecha: new Date().toISOString()
-      });
-      setPuntajeGuardado(true);
-      setMensaje("✅ ¡Guardado!");
-      cargarRanking(); 
-    } catch (error) {
-      console.error("Error al guardar: ", error);
-      setMensaje("❌ Error");
-    }
-  };
-
-  const reiniciarJuego = () => {
-    setVidas(3);
-    setContador(15);
-    setPuntos(0);
-    setJuegoTerminado(false);
-    setBebidaPlato(null); 
-    setPuntajeGuardado(false); 
-    generarPedido(0);
-  };
-
+  // ── Pantalla de carga ────────────────────────────────────────────────────
   if (cargandoAuth) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#111', color: 'white' }}><h2>Cargando...</h2></div>;
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#111', color: 'white' }}>
+        <h2>Cargando...</h2>
+      </div>
+    );
   }
 
+  // ── Pantalla de Login / Registro ─────────────────────────────────────────
   if (!usuario) {
     return (
       <div style={{ fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: '#111', padding: '20px' }}>
         <h1 style={{ color: '#f39c12', fontSize: '2.5rem', marginBottom: '10px', textAlign: 'center' }}>🌊 Mariscales 🦑</h1>
         <div style={{ backgroundColor: '#222', padding: '20px', borderRadius: '15px', width: '100%', maxWidth: '350px' }}>
           <form onSubmit={modoRegistro ? manejarRegistro : manejarLogin} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {modoRegistro && <input type="text" placeholder="Tu Nombre" value={authNombre} onChange={(e) => setAuthNombre(e.target.value)} style={{ padding: '10px', borderRadius: '5px' }} required />}
-            <input type="email" placeholder="Correo electrónico" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} style={{ padding: '10px', borderRadius: '5px' }} required />
-            <input type="password" placeholder="Contraseña" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} style={{ padding: '10px', borderRadius: '5px' }} required />
+            {modoRegistro && (
+              <input type="text" placeholder="Tu Nombre" value={authNombre} onChange={(e) => setAuthNombre(e.target.value)} style={{ padding: '10px', borderRadius: '5px' }} required />
+            )}
+            <input type="email"    placeholder="Correo electrónico" value={authEmail}    onChange={(e) => setAuthEmail(e.target.value)}    style={{ padding: '10px', borderRadius: '5px' }} required />
+            <input type="password" placeholder="Contraseña"         value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} style={{ padding: '10px', borderRadius: '5px' }} required />
+            {authError && <p style={{ color: '#e74c3c', margin: 0, fontSize: '0.85rem' }}>{authError}</p>}
             <button type="submit" style={{ padding: '12px', backgroundColor: '#e67e22', color: 'white', border: 'none', borderRadius: '5px', fontWeight: 'bold' }}>
               {modoRegistro ? "Registrarse y Jugar" : "Entrar a la Cocina"}
             </button>
           </form>
-          <button onClick={() => { setModoRegistro(!modoRegistro); setAuthError(""); }} style={{ background: 'none', border: 'none', color: '#3498db', cursor: 'pointer', marginTop: '15px', width: '100%' }}>
+          <button onClick={() => { setModoRegistro(!modoRegistro); }} style={{ background: 'none', border: 'none', color: '#3498db', cursor: 'pointer', marginTop: '15px', width: '100%' }}>
             {modoRegistro ? "Ya tengo cuenta" : "Crear cuenta"}
           </button>
         </div>
@@ -254,6 +62,7 @@ export default function App() {
     );
   }
 
+  // ── Pantalla principal del juego ─────────────────────────────────────────
   return (
     <div style={{ fontFamily: 'sans-serif', backgroundColor: '#1a120b', height: '100svh', width: '100vw', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxSizing: 'border-box' }}>
 
@@ -283,6 +92,7 @@ export default function App() {
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', backgroundColor: '#3e2723', position: 'relative' }}>
 
         {juegoTerminado ? (
+          /* ── GAME OVER ── */
           <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 100, padding: '16px', boxSizing: 'border-box' }}>
             <div style={{ backgroundColor: '#ecf0f1', padding: '20px', borderRadius: '16px', border: '4px solid #e74c3c', width: '100%', maxWidth: '360px', textAlign: 'center' }}>
               <h2 style={{ color: '#c0392b', marginTop: 0, fontSize: '1.6rem' }}>💀 Game Over</h2>
@@ -310,12 +120,12 @@ export default function App() {
           </div>
         ) : (
           <>
-            {/* TICKET - tira horizontal en la parte superior */}
+            {/* TICKET */}
             <div style={{ flexShrink: 0, padding: '6px 8px', backgroundColor: 'rgba(0,0,0,0.25)', borderBottom: '1px solid #1f1209' }}>
               <Ticket pedidoActual={pedidoActual} />
             </div>
 
-            {/* EMPANADA - ocupa el espacio restante */}
+            {/* EMPANADA */}
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px', overflow: 'hidden' }}>
               <Empanada
                 empanada={empanada}
@@ -328,14 +138,18 @@ export default function App() {
             {/* CONTROLES */}
             <div style={{ flexShrink: 0, padding: '6px 8px', backgroundColor: 'rgba(0,0,0,0.2)', borderTop: '1px solid #1f1209' }}>
               <Controles
-                limpiar={() => { setEmpanada({ izquierda: [], derecha: [] }); setBebidaPlato(null); }}
+                limpiar={limpiarEmpanada}
                 entregar={entregarPedido}
               />
             </div>
 
-            {/* INVENTARIO - panel inferior */}
+            {/* INVENTARIO */}
             <div style={{ flexShrink: 0, backgroundColor: '#2d1b11', borderTop: '2px solid #1f1209', padding: '6px 8px', maxHeight: '32vh', overflowY: 'auto' }}>
-              <Inventario inventario={inventario} inventarioEspecial={inventarioEspecial} inventarioBebidas={inventarioBebidas} />
+              <Inventario
+                inventario={inventario}
+                inventarioEspecial={inventarioEspecial}
+                inventarioBebidas={inventarioBebidas}
+              />
             </div>
           </>
         )}
