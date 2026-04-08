@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Ticket     from "./components/Ticket";
 import Inventario  from "./components/Inventario";
 import Empanada    from "./components/Empanada";
@@ -6,9 +7,18 @@ import Controles   from "./components/Controles";
 import { useAuth } from "./hooks/useAuth";
 import { useGame, inventario, inventarioEspecial, inventarioBebidas } from "./hooks/useGame";
 
+// ── Estilos de botón arcade reutilizables ────────────────────────────────────
+const btnBase = {
+  padding: '13px 20px', border: 'none', borderRadius: '10px',
+  cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem', width: '100%',
+};
+
 export default function App() {
 
-  // ── Autenticación ────────────────────────────────────────────────────────
+  // ── Navegación ───────────────────────────────────────────────────────────
+  const [vista, setVista] = useState('menu');
+
+  // ── Autenticación ─────────────────────────────────────────────────────────
   const {
     usuario, cargandoAuth,
     modoRegistro, setModoRegistro,
@@ -19,16 +29,16 @@ export default function App() {
     manejarLogin, manejarRegistro, cerrarSesion,
   } = useAuth();
 
-  // ── Lógica del juego ─────────────────────────────────────────────────────
+  // ── Lógica del juego ──────────────────────────────────────────────────────
   const {
     empanada, bebidaPlato, pedidoActual, mensaje,
     contador, vidas, puntos, juegoTerminado,
     puntajeGuardado, rankingTop,
     agregarIngrediente, agregarBebida, limpiarEmpanada,
-    entregarPedido, guardarPuntaje, reiniciarJuego,
+    entregarPedido, guardarPuntaje, reiniciarJuego, cargarRanking,
   } = useGame(usuario);
 
-  // ── Pantalla de carga ────────────────────────────────────────────────────
+  // ── Pantalla de carga ─────────────────────────────────────────────────────
   if (cargandoAuth) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#111', color: 'white' }}>
@@ -37,7 +47,7 @@ export default function App() {
     );
   }
 
-  // ── Pantalla de Login / Registro ─────────────────────────────────────────
+  // ── Vista: Auth ───────────────────────────────────────────────────────────
   if (!usuario) {
     return (
       <div style={{ fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: '#111', padding: '20px' }}>
@@ -54,7 +64,7 @@ export default function App() {
               {modoRegistro ? "Registrarse y Jugar" : "Entrar a la Cocina"}
             </button>
           </form>
-          <button onClick={() => { setModoRegistro(!modoRegistro); }} style={{ background: 'none', border: 'none', color: '#3498db', cursor: 'pointer', marginTop: '15px', width: '100%' }}>
+          <button onClick={() => setModoRegistro(!modoRegistro)} style={{ background: 'none', border: 'none', color: '#3498db', cursor: 'pointer', marginTop: '15px', width: '100%' }}>
             {modoRegistro ? "Ya tengo cuenta" : "Crear cuenta"}
           </button>
         </div>
@@ -62,13 +72,97 @@ export default function App() {
     );
   }
 
-  // ── Pantalla principal del juego ─────────────────────────────────────────
+  const nombreCocinero = usuario.displayName || usuario.email.split('@')[0];
+
+  // ── Vista: Menú Principal ─────────────────────────────────────────────────
+  if (vista === 'menu') {
+    return (
+      <div style={{ fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: '#111', padding: '20px', gap: '24px' }}>
+        <div style={{ textAlign: 'center' }}>
+          <h1 style={{ color: '#f39c12', fontSize: '2.8rem', margin: '0 0 8px', textShadow: '0 0 24px #e67e22' }}>🌊 Mariscales 🦑</h1>
+          <p style={{ color: '#aaa', fontSize: '0.95rem', margin: 0 }}>
+            Bienvenido, <strong style={{ color: '#f1c40f' }}>{nombreCocinero}</strong>
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', maxWidth: '300px' }}>
+          <button
+            onClick={() => { reiniciarJuego(); setVista('juego'); }}
+            style={{ ...btnBase, backgroundColor: '#27ae60', color: 'white', fontSize: '1.1rem', letterSpacing: '1px' }}
+          >
+            🍳 Iniciar Turno
+          </button>
+          <button
+            onClick={() => { cargarRanking(); setVista('ranking'); }}
+            style={{ ...btnBase, backgroundColor: '#2980b9', color: 'white' }}
+          >
+            🏆 Ver Ranking
+          </button>
+          <button
+            onClick={cerrarSesion}
+            style={{ ...btnBase, backgroundColor: 'transparent', color: '#e74c3c', border: '2px solid #e74c3c' }}
+          >
+            Cerrar Sesión
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Vista: Ranking ────────────────────────────────────────────────────────
+  if (vista === 'ranking') {
+    return (
+      <div style={{ fontFamily: 'sans-serif', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: '#111', padding: '20px', gap: '20px' }}>
+        <h2 style={{ color: '#f1c40f', fontSize: '2rem', margin: 0 }}>🏆 TOP 5 Cocineros</h2>
+
+        <div style={{ backgroundColor: '#222', borderRadius: '12px', padding: '16px', width: '100%', maxWidth: '340px' }}>
+          {rankingTop.length === 0 ? (
+            <p style={{ color: '#aaa', textAlign: 'center', margin: 0 }}>Sin récords aún. ¡Sé el primero!</p>
+          ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid #444' }}>
+                  <th style={{ color: '#f39c12', textAlign: 'left',  padding: '6px 8px', fontSize: '0.8rem' }}>#</th>
+                  <th style={{ color: '#f39c12', textAlign: 'left',  padding: '6px 8px', fontSize: '0.8rem' }}>Cocinero</th>
+                  <th style={{ color: '#f39c12', textAlign: 'right', padding: '6px 8px', fontSize: '0.8rem' }}>Pts</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rankingTop.map((r, i) => (
+                  <tr key={i} style={{ backgroundColor: i % 2 === 0 ? 'rgba(255,255,255,0.04)' : 'transparent' }}>
+                    <td style={{ color: '#f1c40f', padding: '7px 8px', fontWeight: 'bold' }}>{i + 1}</td>
+                    <td style={{ color: '#fff',    padding: '7px 8px' }}>{r.nombre}</td>
+                    <td style={{ color: '#e74c3c', padding: '7px 8px', fontWeight: 'bold', textAlign: 'right' }}>{r.puntos}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        <button
+          onClick={() => setVista('menu')}
+          style={{ ...btnBase, backgroundColor: '#555', color: 'white', maxWidth: '340px' }}
+        >
+          ← Volver al Menú
+        </button>
+      </div>
+    );
+  }
+
+  // ── Vista: Área de Juego ──────────────────────────────────────────────────
   return (
     <div style={{ fontFamily: 'sans-serif', backgroundColor: '#1a120b', height: '100svh', width: '100vw', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxSizing: 'border-box' }}>
 
       {/* HEADER COMPACTO */}
       <header style={{ backgroundColor: '#0f0f0f', padding: '6px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #333', flexShrink: 0, gap: '6px' }}>
-        <span style={{ color: '#f39c12', fontSize: '1.3rem', flexShrink: 0 }}>🌊🦑</span>
+        <button
+          onClick={() => setVista('menu')}
+          title="Volver al Menú"
+          style={{ padding: '3px 7px', backgroundColor: '#333', color: '#aaa', border: '1px solid #555', borderRadius: '3px', cursor: 'pointer', fontSize: '0.7rem', flexShrink: 0 }}
+        >
+          ← Menú
+        </button>
 
         <span style={{ color: '#fff', fontSize: '0.75rem', backgroundColor: '#333', padding: '3px 7px', borderRadius: '5px', flex: 1, textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {mensaje}
@@ -80,12 +174,9 @@ export default function App() {
           <span>{"❤️".repeat(vidas > 0 ? vidas : 0)}</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
-          <span style={{ color: '#aaa', fontSize: '0.7rem', maxWidth: '64px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {usuario.displayName || usuario.email.split('@')[0]}
-          </span>
-          <button onClick={cerrarSesion} style={{ padding: '4px 8px', backgroundColor: '#c0392b', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '0.7rem', flexShrink: 0 }}>✕</button>
-        </div>
+        <span style={{ color: '#aaa', fontSize: '0.7rem', maxWidth: '64px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 0 }}>
+          {nombreCocinero}
+        </span>
       </header>
 
       {/* ÁREA DE JUEGO VERTICAL */}
@@ -115,7 +206,8 @@ export default function App() {
                   ))}
                 </div>
               )}
-              <button onClick={reiniciarJuego} style={{ padding: '12px', backgroundColor: '#2ecc71', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', width: '100%', fontSize: '1rem' }}>🔄 Volver a Jugar</button>
+              <button onClick={reiniciarJuego} style={{ padding: '12px', backgroundColor: '#2ecc71', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', width: '100%', fontSize: '1rem', marginBottom: '8px' }}>🔄 Volver a Jugar</button>
+              <button onClick={() => setVista('menu')} style={{ padding: '11px', backgroundColor: '#7f8c8d', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', width: '100%', fontSize: '0.9rem' }}>🏠 Volver al Menú Principal</button>
             </div>
           </div>
         ) : (

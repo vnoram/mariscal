@@ -64,17 +64,9 @@ export function useGame(usuario) {
     setMensaje(`¡Nivel ${nivel}!`);
   };
 
-  // ── Arrancar partida cuando el usuario inicia sesión ─────────────────────
+  // ── Temporizador (solo corre cuando hay una partida activa) ──────────────
   useEffect(() => {
-    if (usuario && !juegoTerminado && puntos === 0 && vidas === 3 && !pedidoActual) {
-      generarPedido(0);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [usuario]);
-
-  // ── Temporizador ─────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (juegoTerminado || !usuario) return;
+    if (juegoTerminado || !usuario || !pedidoActual) return;
     const timer = setInterval(() => setContador((c) => c - 1), 1000);
     return () => clearInterval(timer);
   }, [juegoTerminado, usuario]);
@@ -195,5 +187,6 @@ export function useGame(usuario) {
     entregarPedido,
     guardarPuntaje,
     reiniciarJuego,
+    cargarRanking,
   };
 }
