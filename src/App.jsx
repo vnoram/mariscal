@@ -35,8 +35,20 @@ export default function App() {
     contador, vidas, puntos, juegoTerminado,
     puntajeGuardado, rankingTop,
     agregarIngrediente, agregarBebida, limpiarEmpanada,
-    entregarPedido, guardarPuntaje, reiniciarJuego, cargarRanking,
+    entregarPedido, guardarPuntaje, reiniciarJuego, cargarRanking, detenerBgm
   } = useGame(usuario);
+
+  // ── Funciones de Navegación con Sonido ────────────────────────────────────
+  const irAlMenu = () => {
+    if (detenerBgm) detenerBgm();
+    setVista('menu');
+  };
+
+  const salirDeLaCuenta = async () => {
+    if (detenerBgm) detenerBgm();
+    await cerrarSesion();
+    setVista('menu');
+  };
 
   // ── Pantalla de carga ─────────────────────────────────────────────────────
   if (cargandoAuth) {
@@ -99,7 +111,7 @@ export default function App() {
             🏆 Ver Ranking
           </button>
           <button
-            onClick={cerrarSesion}
+            onClick={salirDeLaCuenta}
             style={{ ...btnBase, backgroundColor: 'transparent', color: '#e74c3c', border: '2px solid #e74c3c' }}
           >
             Cerrar Sesión
@@ -141,7 +153,7 @@ export default function App() {
         </div>
 
         <button
-          onClick={() => setVista('menu')}
+          onClick={irAlMenu}
           style={{ ...btnBase, backgroundColor: '#555', color: 'white', maxWidth: '340px' }}
         >
           ← Volver al Menú
@@ -157,7 +169,7 @@ export default function App() {
       {/* HEADER COMPACTO */}
       <header style={{ backgroundColor: '#0f0f0f', padding: '6px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #333', flexShrink: 0, gap: '6px' }}>
         <button
-          onClick={() => setVista('menu')}
+          onClick={irAlMenu}
           title="Volver al Menú"
           style={{ padding: '3px 7px', backgroundColor: '#333', color: '#aaa', border: '1px solid #555', borderRadius: '3px', cursor: 'pointer', fontSize: '0.7rem', flexShrink: 0 }}
         >
@@ -207,7 +219,7 @@ export default function App() {
                 </div>
               )}
               <button onClick={reiniciarJuego} style={{ padding: '12px', backgroundColor: '#2ecc71', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', width: '100%', fontSize: '1rem', marginBottom: '8px' }}>🔄 Volver a Jugar</button>
-              <button onClick={() => setVista('menu')} style={{ padding: '11px', backgroundColor: '#7f8c8d', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', width: '100%', fontSize: '0.9rem' }}>🏠 Volver al Menú Principal</button>
+              <button onClick={irAlMenu} style={{ padding: '11px', backgroundColor: '#7f8c8d', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', width: '100%', fontSize: '0.9rem' }}>🏠 Volver al Menú Principal</button>
             </div>
           </div>
         ) : (

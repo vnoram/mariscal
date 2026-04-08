@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import useSound from "use-sound";
 import { db } from "../lib/firebase";
 import {
   collection,
@@ -27,6 +28,34 @@ export function useGame(usuario) {
   const [juegoTerminado, setJuegoTerminado] = useState(false);
   const [puntajeGuardado,setPuntajeGuardado]= useState(false);
   const [rankingTop,     setRankingTop]     = useState([]);
+
+  // ── Sonidos ──────────────────────────────────────────────────────────────
+  const [playPop]                   = useSound("/sounds/pop.mp3");
+  const [playDing]                  = useSound("/sounds/ding.mp3");
+  const [playError]                 = useSound("/sounds/error.mp3");
+  const [playBgm, { stop: stopBgm }] = useSound("/sounds/bgm.mp3", { volume: 0.2, loop: true });
+  const bgmActiveRef                = useRef(false);
+
+  // Inicia BGM cuando hay pedido activo y el juego no terminó
+  useEffect(() => {
+    if (!juegoTerminado && pedidoActual && !bgmActiveRef.current) {
+      playBgm();
+      bgmActiveRef.current = true;
+    }
+  }, [pedidoActual, juegoTerminado, playBgm]);
+
+  // Detiene BGM en Game Over
+  useEffect(() => {
+    if (juegoTerminado && bgmActiveRef.current) {
+      stopBgm();
+      bgmActiveRef.current = false;
+    }
+  }, [juegoTerminado, stopBgm]);
+
+  const detenerBgm = () => {
+    stopBgm();
+    bgmActiveRef.current = false;
+  };
 
   // ── Genera un pedido aleatorio según dificultad ──────────────────────────
   const generarPedido = (puntosActuales = 0) => {
@@ -74,6 +103,7 @@ export function useGame(usuario) {
   // ── Tiempo agotado ───────────────────────────────────────────────────────
   useEffect(() => {
     if (contador === 0 && !juegoTerminado) {
+      playError();
       setVidas((v) => v - 1);
       setMensaje("⏳ ¡Tiempo agotado!");
       generarPedido(puntos);
@@ -95,11 +125,13 @@ export function useGame(usuario) {
   // ── Acciones del jugador ─────────────────────────────────────────────────
   const agregarIngrediente = (item, lado) => {
     if (juegoTerminado) return;
+    playPop();
     setEmpanada((prev) => ({ ...prev, [lado]: [...prev[lado], item] }));
   };
 
   const agregarBebida = (item) => {
     if (juegoTerminado) return;
+    playPop();
     setBebidaPlato(item);
   };
 
@@ -117,6 +149,7 @@ export function useGame(usuario) {
       bebidaPlato === pedidoActual.bebida;
 
     if (esCorrecto) {
+      playDing();
       const nuevosPuntos = puntos + 1;
       setPuntos(nuevosPuntos);
       setMensaje("⭐⭐⭐⭐⭐ ¡Perfecto!");
@@ -125,6 +158,7 @@ export function useGame(usuario) {
       setContador(15);
       setTimeout(() => generarPedido(nuevosPuntos), 1500);
     } else {
+      playError();
       setVidas((v) => v - 1);
       setMensaje("❌ Pedido incorrecto");
     }
@@ -188,5 +222,6 @@ export function useGame(usuario) {
     guardarPuntaje,
     reiniciarJuego,
     cargarRanking,
+    detenerBgm,
   };
 }
